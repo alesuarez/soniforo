@@ -58,6 +58,7 @@ extern "C" {
 /*==================[external functions declaration]=========================*/
 
 bool_t esp8266InitHttpServer(char * wifiName, char * wifiPass);
+bool_t esp8266InitAPServer();
 bool_t esp8266ReadHttpServer();
 bool_t esp8266WriteHttpServer(const char * webHttpHeader, char * webHttpBody, const char * webHttpEnd);
 

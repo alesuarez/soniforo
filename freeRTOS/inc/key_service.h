@@ -1,5 +1,5 @@
-#ifndef APP_INC_KEY_SERVICE_H_
-#define APP_INC_KEY_SERVICE_H_
+#ifndef FREERTOS_INC_KEY_SERVICE_H_
+#define FREERTOS_INC_KEY_SERVICE_H_
 
 #include "sapi.h"
 
