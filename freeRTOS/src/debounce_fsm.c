@@ -9,7 +9,7 @@ void initDebounceFsm(debounceData_t *dataStruct, gpioMap_t key) {
 	return;
 }
 
-bool_t getDebounceFsm(debounceData_t *ptrDataStruct, gpioMap_t pressedKey) {
+bool_t getDebounceFsm(debounceData_t *ptrDataStruct) {
 	bool_t isButtonPress = FALSE;
 
 	switch (ptrDataStruct->state) {

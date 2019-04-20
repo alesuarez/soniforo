@@ -17,6 +17,6 @@ typedef struct{
 } debounceData_t;
 
 void initDebounceFsm(debounceData_t * dataStruct, gpioMap_t key);
-bool_t getDebounceFsm(debounceData_t * ptrDataStruct, gpioMap_t pressedKey);
+bool_t getDebounceFsm(debounceData_t * ptrDataStruct);
 
 #endif
