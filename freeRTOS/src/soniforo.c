@@ -2,16 +2,21 @@
 #include "FreeRTOSConfig.h"
 #include "task.h"
 #include "semphr.h"
-#include "debounce_fsm.h"
 // sAPI header
 #include "sapi.h"
 
-#define RED_LED_PORT		GPIO0
-#define YELLOW_LED_PORT		GPIO1
-#define GREEN_LED_PORT 		GPIO2
+#define RED_LED_PORT			GPIO0
+#define YELLOW_LED_PORT			GPIO1
+#define GREEN_LED_PORT 			GPIO2
+#define MAX_COMMAND_LENGHT	 	45
+#define COMMAND_INIT_LENGHT	 	12
+#define ESP01_UART 				UART_232
+#define DEFAULT_BAUD_RATE 		115200
 
+CONSOLE_PRINT_ENABLE
 DEBUG_PRINT_ENABLE
-;
+
+void initIRQ();
 
 SemaphoreHandle_t xsRedLightOff = NULL;
 SemaphoreHandle_t xsRedLigthOn = NULL;
@@ -22,15 +27,19 @@ SemaphoreHandle_t xsYellowLigthOn = NULL;
 SemaphoreHandle_t xsGreenLightOff = NULL;
 SemaphoreHandle_t xsGreenLigthOn = NULL;
 
-typedef enum{
-	LED_ON,
-	LED_OFF
+TaskHandle_t sendStatusToEthernetHandle;
+TaskHandle_t ligthYellowTaskHandle;
+TaskHandle_t ligthGreenTaskHandle;
+TaskHandle_t ligthRedTaskHandle;
+TaskHandle_t sendTaskHandle;
+TaskHandle_t esp01TaskHandle;
+
+typedef enum {
+	LED_ON, LED_OFF
 } Led_Status;
 
-typedef enum{
-	RED_LED,
-	YELLOW_LED,
-	GREEN_LED
+typedef enum {
+	RED_LED, YELLOW_LED, GREEN_LED
 } Led_Name;
 
 struct Message { //Estructura con formato del mensaje
@@ -38,6 +47,106 @@ struct Message { //Estructura con formato del mensaje
 	Led_Status Status;
 	int32_t Time;
 };
+
+typedef enum CommandEsp8266 {
+	CMD_AT, //1
+	CMD_RST, //2
+	CMD_CWMODE_1, //3
+	CMD_CWMODE_2, //4
+	CMD_CWSAP, //5
+	CMD_CWDHCP_0_1, //6
+	CMD_CWDHCP_1_1, //7
+	CMD_CIPSTART, //8
+	CMD_CIPSEND, //9
+	CMD_CIPMUX_1, //10
+	CMD_CIPDINFO_1, //11
+	CMD_CIPSTATUS_Q, //12
+	CMD_CWAUTOCONN_0 //13
+} CommandEsp8266_t;
+
+static const char CommandEsp8266ToString[][MAX_COMMAND_LENGHT] = { "AT\r\n", //1
+		"AT+RST\r\n", //2
+		"AT+CWMODE=1\r\n", //3
+		"AT+CWMODE=2\r\n", //4
+		"AT+CWSAP=\"Soniforo_CIAA\",\"\",10,0\r\n", //5
+		"AT+CWDHCP=0,1\r\n", //6
+		"AT+CWDHCP=1,1\r\n", //7
+		"AT+CIPSTART=3,\"UDP\",\"0\",0,4096,2\r\n", //8
+		"AT+CIPSEND=3,8,\"192.168.4.255\",4096\r\n", //9
+		"AT+CIPMUX=1\r\n", //10
+		"AT+CIPDINFO=1\r\n", //11
+		"AT+CIPSTATUS?\r\n", //12
+		"AT+CWAUTOCONN=0\r\n" //13
+		};
+
+static char esp01Responses[][MAX_COMMAND_LENGHT] = { "AT\r\n", //1
+		"AT+RST\r\n", //2
+		"CWMODE=1\r\n", //3
+		"CWMODE=2\r\n", //4
+		"OK\r\n", //5
+		"OK\r\n", //6
+		"CWDHCP=1,1\r\n", //7
+		"3,CONNECT\r\n", //8
+		"OK\r\n", //9
+		"CIPMUX=1\r\n", //10
+		"CIPDINFO=1\r\n", //11
+		"STATUS:5\r\n", //12
+		"CWAUTOCONN=0\r\n" //13
+
+		};
+
+static CommandEsp8266_t initVector[COMMAND_INIT_LENGHT] = { CMD_AT, CMD_RST,
+		CMD_CWMODE_1, CMD_CIPMUX_1, CMD_CIPDINFO_1, CMD_CWAUTOCONN_0,
+		CMD_CWDHCP_1_1, CMD_CIPSTATUS_Q, CMD_CWMODE_2, CMD_CWSAP,
+		CMD_CWDHCP_0_1, CMD_CIPSTART};
+
+bool_t sendCmd(CommandEsp8266_t cmd) {
+	bool_t retVal = FALSE;
+
+	debugPrintString(">>>> Enviando ");
+	debugPrintlnString(CommandEsp8266ToString[cmd]);
+
+	consolePrintString(CommandEsp8266ToString[cmd]);
+
+	retVal = waitForReceiveStringOrTimeoutBlocking( ESP01_UART,
+			esp01Responses[cmd], 4, 5000);
+
+	if (retVal) {
+		debugPrintString(">>>>    Exito al enviar : ");debugPrintlnString(
+				CommandEsp8266ToString[cmd]);
+	} else {
+		debugPrintString(">>>>    Error al enviar : ");debugPrintlnString(
+				CommandEsp8266ToString[cmd]);
+		return retVal;
+	}
+
+	return TRUE;
+}
+void esp01Task(void *p) {
+
+	portTickType xPeriodicity = 20 / portTICK_RATE_MS;
+	portTickType xLastWakeTime = xTaskGetTickCount();
+
+	gpioWrite(LED1, ON);
+
+	consolePrintConfigUart(ESP01_UART, DEFAULT_BAUD_RATE);
+	debugPrintConfigUart(UART_USB, DEFAULT_BAUD_RATE );
+
+	for (int i = 0; i < COMMAND_INIT_LENGHT; i++) {
+		sendCmd(initVector[i]);
+		vTaskDelay(5000 / portTICK_RATE_MS);
+	}
+
+	vTaskResume(ligthRedTaskHandle);
+	vTaskResume(ligthYellowTaskHandle);
+	vTaskResume(ligthGreenTaskHandle);
+
+	initIRQ();
+
+	gpioWrite(LED1, OFF);
+
+	vTaskSuspend(esp01TaskHandle);
+}
 
 void ligthRedTask(void *p) {
 	xQueueHandle Buffer = *(xQueueHandle *) p;
@@ -130,8 +239,10 @@ void copyMessage(struct Message src, struct Message * dst) {
 
 void decideAction(struct Message new, struct Message old) {
 	// todo: In this implementation the turn off leds states were not taken into account
-	if (old.Led == YELLOW_LED && new.Led == GREEN_LED){
+	vTaskSuspend(sendStatusToEthernetHandle);
+	if (old.Led == YELLOW_LED && new.Led == GREEN_LED) {
 		debugPrintlnString("Cruzar\r\n");
+		vTaskResume(sendStatusToEthernetHandle);
 		return;
 	}
 
@@ -145,13 +256,12 @@ void decideAction(struct Message new, struct Message old) {
 
 }
 
-void Send(void * a) {
+void send(void * a) {
 	xQueueHandle Buffer = *(xQueueHandle *) a;
 	struct Message Sending_Message;
 	static struct Message oldMessage;
 	while (1) {
-
-		if (xQueueReceive(Buffer, &Sending_Message, portMAX_DELAY)){
+		if (xQueueReceive(Buffer, &Sending_Message, portMAX_DELAY)) {
 			decideAction(Sending_Message, oldMessage);
 			copyMessage(Sending_Message, &oldMessage);
 			vTaskDelay(1 / portTICK_RATE_MS);
@@ -159,7 +269,14 @@ void Send(void * a) {
 	}
 }
 
-
+void sendStatusToEthernet(void * a) {
+	while (1) {
+		debugPrintlnString("Cruzar\r\n");
+		sendCmd(CMD_CIPSEND);
+		consolePrintString("Cruzar\r\n");
+		vTaskDelay(500 / portTICK_RATE_MS);
+	}
+}
 
 void initIRQ() {
 	Chip_PININT_Init(LPC_GPIO_PIN_INT);
@@ -243,6 +360,9 @@ int main(void) {
 
 	boardConfig();
 
+	debugPrintConfigUart( UART_USB, DEFAULT_BAUD_RATE );
+	debugPrintlnString("Inicio de programa... \r\n");
+
 	xsRedLightOff = xSemaphoreCreateBinary();
 	xsRedLigthOn = xSemaphoreCreateBinary();
 
@@ -252,47 +372,64 @@ int main(void) {
 	xsGreenLightOff = xSemaphoreCreateBinary();
 	xsGreenLigthOn = xSemaphoreCreateBinary();
 
-	initIRQ();
-
-	debugPrintConfigUart( UART_USB, 115200 );
-	debugPrintlnString("Inicio de programa... \r\n");
-
-	Send_Buf = xQueueCreate(10,sizeof(struct Message));
+	Send_Buf = xQueueCreate(10, sizeof(struct Message));
 
 	gpioWrite(LED3, ON);
 
 	// Crear tarea en freeRTOS
-	xTaskCreate(ligthRedTask,                  // Funcion de la tarea a ejecutar
-			(const char *) "ligthRedTask", // Nombre de la tarea como String amigable para el usuario
-			configMINIMAL_STACK_SIZE * 2, // Cantidad de stack de la tarea
-			&Send_Buf,                          // Parametros de tarea
-			tskIDLE_PRIORITY + 7,         // Prioridad de la tarea
-			0                         // Puntero a la tarea creada en el sistema
+	xTaskCreate(ligthRedTask,
+			(const char *) "ligthRedTask",
+			configMINIMAL_STACK_SIZE * 2,
+			&Send_Buf,
+			tskIDLE_PRIORITY + 7,
+			&ligthRedTaskHandle
 			);
 
-	xTaskCreate(ligthYellowTask,               // Funcion de la tarea a ejecutar
-			(const char *) "ligthYellowTask", // Nombre de la tarea como String amigable para el usuario
-			configMINIMAL_STACK_SIZE * 2, // Cantidad de stack de la tarea
-			&Send_Buf,                          // Parametros de tarea
-			tskIDLE_PRIORITY + 7,         // Prioridad de la tarea
-			0                         // Puntero a la tarea creada en el sistema
+	xTaskCreate(ligthYellowTask,
+			(const char *) "ligthYellowTask",
+			configMINIMAL_STACK_SIZE * 2,
+			&Send_Buf,
+			tskIDLE_PRIORITY + 7,
+			&ligthYellowTaskHandle
 			);
 
-	xTaskCreate(ligthGreenTask,               // Funcion de la tarea a ejecutar
-			(const char *) "ligthGreenTask", // Nombre de la tarea como String amigable para el usuario
-			configMINIMAL_STACK_SIZE * 2, // Cantidad de stack de la tarea
-			&Send_Buf,                          // Parametros de tarea
-			tskIDLE_PRIORITY + 7,         // Prioridad de la tarea
-			0                         // Puntero a la tarea creada en el sistema
+	xTaskCreate(ligthGreenTask,
+			(const char *) "ligthGreenTask",
+			configMINIMAL_STACK_SIZE * 2,
+			&Send_Buf,
+			tskIDLE_PRIORITY + 7,
+			&ligthGreenTaskHandle
 			);
 
-	xTaskCreate(Send,               // Funcion de la tarea a ejecutar
-			(const char *) "Send", // Nombre de la tarea como String amigable para el usuario
-			configMINIMAL_STACK_SIZE * 2, // Cantidad de stack de la tarea
-			&Send_Buf,                          // Parametros de tarea
-			tskIDLE_PRIORITY + 1,         // Prioridad de la tarea
-			0                         // Puntero a la tarea creada en el sistema
+	xTaskCreate(send,
+			(const char *) "send",
+			configMINIMAL_STACK_SIZE * 2,
+			&Send_Buf,
+			tskIDLE_PRIORITY + 1,
+			&sendTaskHandle
 			);
+
+	xTaskCreate(sendStatusToEthernet,
+			(const char *) "sendStatusToEthernet",
+			configMINIMAL_STACK_SIZE * 2,
+			&Send_Buf,
+			tskIDLE_PRIORITY + 1,
+			&sendStatusToEthernetHandle
+			);
+
+	xTaskCreate(esp01Task,
+			(const char *) "esp01Task",
+			configMINIMAL_STACK_SIZE * 2,
+			&Send_Buf,
+			tskIDLE_PRIORITY + 1,
+			&esp01TaskHandle
+			);
+
+	vTaskSuspend(sendStatusToEthernetHandle);
+
+	vTaskSuspend(ligthRedTaskHandle);
+	vTaskSuspend(ligthYellowTaskHandle);
+	vTaskSuspend(ligthGreenTaskHandle);
 
 	// Iniciar scheduler
 	vTaskStartScheduler();
