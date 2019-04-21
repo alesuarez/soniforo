@@ -21,24 +21,26 @@
 #define PIN_3					3
 #define PIN_4					4
 
+#define ISR_PRIORITY			5
+
 CONSOLE_PRINT_ENABLE
 DEBUG_PRINT_ENABLE
 
-static void esp01Task(void *); // tarea encargada de configurar la ESP01
-static void ligthRedTask(void *); // tarea de atender a la interrucion de la luz roja
-static void ligthYellowTask(void *); // tarea de atender a la interrucion de la luz amarilla
-static void ligthGreenTask(void *); // tarea de atender a la interrucion de la luz verde
-static void receiveQueueTask(void *); // tarea que recibe los mensajes
-static void sendStatusToEsp01Task(void *); // tarea encargada de enviar mensajes a la ESP01
+static void esp01Task(void *); 				// tarea encargada de configurar la ESP01
+static void ligthRedTask(void *); 			// tarea de atender a la interrucion de la luz roja
+static void ligthYellowTask(void *); 		// tarea de atender a la interrucion de la luz amarilla
+static void ligthGreenTask(void *); 		// tarea de atender a la interrucion de la luz verde
+static void receiveQueueTask(void *); 		// tarea que recibe los mensajes
+static void sendStatusToEsp01Task(void *); 	// tarea encargada de enviar mensajes a la ESP01
 
 static void copyMessage(struct Message, struct Message *);
 static void decideAction(struct Message, struct Message);
 static bool_t sendCmd(CommandEsp8266_t); // envia un comando a la ESP01
 
-static void initIRQ(); // configuracion de las interrupciones del micro
-void GPIO0_IRQHandler(void); // handler de la luz roja
-void GPIO1_IRQHandler(void); // handler de la luz amarilla
-void GPIO2_IRQHandler(void); // handler de la luz verde
+static void initIRQ(); 			// configuracion de las interrupciones del micro
+void GPIO0_IRQHandler(void); 	// handler de la luz roja
+void GPIO1_IRQHandler(void); 	// handler de la luz amarilla
+void GPIO2_IRQHandler(void); 	// handler de la luz verde
 
 SemaphoreHandle_t xsRedLightOff = NULL;
 SemaphoreHandle_t xsRedLigthOn = NULL;
@@ -196,11 +198,11 @@ static bool_t sendCmd(CommandEsp8266_t cmd) {
 			esp01Responses[cmd], 4, 5000);
 
 	if (retValue) {
-		debugPrintString(">>>>    Exito al enviar : ");debugPrintlnString(
-				CommandEsp8266ToString[cmd]);
+		debugPrintString(">>>>    Exito al enviar : ");
+		debugPrintlnString(CommandEsp8266ToString[cmd]);
 	} else {
-		debugPrintString(">>>>    Error al enviar : ");debugPrintlnString(
-				CommandEsp8266ToString[cmd]);
+		debugPrintString(">>>>    Error al enviar : ");
+		debugPrintlnString(CommandEsp8266ToString[cmd]);
 		return retValue;
 	}
 
@@ -242,7 +244,7 @@ static void initIRQ() {
 	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH0); 	//Se configura el canal
 	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH0);
 	Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH0);
-	NVIC_SetPriority(PIN_INT0_IRQn, 5);
+	NVIC_SetPriority(PIN_INT0_IRQn, ISR_PRIORITY);
 	NVIC_EnableIRQ(PIN_INT0_IRQn);
 
 	Chip_SCU_GPIOIntPinSel(CH1, GPIO_3, PIN_3);
@@ -250,7 +252,7 @@ static void initIRQ() {
 	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH1);
 	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH1);
 	Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH1);
-	NVIC_SetPriority(PIN_INT1_IRQn, 5);
+	NVIC_SetPriority(PIN_INT1_IRQn, ISR_PRIORITY);
 	NVIC_EnableIRQ(PIN_INT1_IRQn);
 
 	Chip_SCU_GPIOIntPinSel(CH2, GPIO_3, PIN_4);
@@ -258,7 +260,7 @@ static void initIRQ() {
 	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH2);
 	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH2);
 	Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH2);
-	NVIC_SetPriority(PIN_INT2_IRQn, 5);
+	NVIC_SetPriority(PIN_INT2_IRQn, ISR_PRIORITY);
 	NVIC_EnableIRQ(PIN_INT2_IRQn);
 }
 
@@ -387,10 +389,8 @@ int main(void) {
 	vTaskSuspend(ligthYellowTaskHandle);
 	vTaskSuspend(ligthGreenTaskHandle);
 
-	// Iniciar scheduler
 	vTaskStartScheduler();
 
-	// ---------- REPETIR POR SIEMPRE --------------------------
 	while ( TRUE) {
 		gpioWrite(LED1, ON);
 		gpioWrite(LED2, ON);
@@ -398,8 +398,5 @@ int main(void) {
 		// Si cae en este while 1 significa que no pudo iniciar el scheduler
 	}
 
-	// NO DEBE LLEGAR NUNCA AQUI, debido a que a este programa se ejecuta
-	// directamenteno sobre un microcontroladore y no es llamado por ningun
-	// Sistema Operativo, como en el caso de un programa para PC.
 	return 0;
 }
