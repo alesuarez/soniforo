@@ -305,7 +305,7 @@ void GPIO2_IRQHandler(void) {
 
 int main(void) {
 
-	static xQueueHandle Send_Buf;
+	static xQueueHandle sendBuffer;
 
 	boardConfig();
 
@@ -321,7 +321,7 @@ int main(void) {
 	xsGreenLightOff = xSemaphoreCreateBinary();
 	xsGreenLigthOn = xSemaphoreCreateBinary();
 
-	Send_Buf = xQueueCreate(10, sizeof(struct Message));
+	sendBuffer = xQueueCreate(10, sizeof(struct Message));
 
 	gpioWrite(LED3, ON);
 
@@ -329,7 +329,7 @@ int main(void) {
 	xTaskCreate(ligthRedTask,
 			(const char *) "ligthRedTask",
 			configMINIMAL_STACK_SIZE * 2,
-			&Send_Buf,
+			&sendBuffer,
 			tskIDLE_PRIORITY + 7,
 			&ligthRedTaskHandle
 			);
@@ -337,7 +337,7 @@ int main(void) {
 	xTaskCreate(ligthYellowTask,
 			(const char *) "ligthYellowTask",
 			configMINIMAL_STACK_SIZE * 2,
-			&Send_Buf,
+			&sendBuffer,
 			tskIDLE_PRIORITY + 7,
 			&ligthYellowTaskHandle
 			);
@@ -345,7 +345,7 @@ int main(void) {
 	xTaskCreate(ligthGreenTask,
 			(const char *) "ligthGreenTask",
 			configMINIMAL_STACK_SIZE * 2,
-			&Send_Buf,
+			&sendBuffer,
 			tskIDLE_PRIORITY + 7,
 			&ligthGreenTaskHandle
 			);
@@ -353,7 +353,7 @@ int main(void) {
 	xTaskCreate(sendTask,
 			(const char *) "send",
 			configMINIMAL_STACK_SIZE * 2,
-			&Send_Buf,
+			&sendBuffer,
 			tskIDLE_PRIORITY + 1,
 			&sendTaskHandle
 			);
@@ -361,7 +361,7 @@ int main(void) {
 	xTaskCreate(sendStatusToEthernetTask,
 			(const char *) "sendStatusToEthernet",
 			configMINIMAL_STACK_SIZE * 2,
-			&Send_Buf,
+			&sendBuffer,
 			tskIDLE_PRIORITY + 1,
 			&sendStatusToEthernetHandle
 			);
@@ -369,7 +369,7 @@ int main(void) {
 	xTaskCreate(esp01Task,
 			(const char *) "esp01Task",
 			configMINIMAL_STACK_SIZE * 2,
-			&Send_Buf,
+			&sendBuffer,
 			tskIDLE_PRIORITY + 1,
 			&esp01TaskHandle
 			);
