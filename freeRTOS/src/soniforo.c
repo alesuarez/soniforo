@@ -13,24 +13,32 @@
 #define ESP01_UART 				UART_232
 #define DEFAULT_BAUD_RATE 		115200
 
+#define CH0						0
+#define CH1						1
+#define CH2						2
+#define GPIO_3					3
+#define PIN_0					0
+#define PIN_3					3
+#define PIN_4					4
+
 CONSOLE_PRINT_ENABLE
 DEBUG_PRINT_ENABLE
 
-static void esp01Task(void *);
-static void ligthRedTask(void *);
-static void ligthYellowTask(void *);
-static void ligthGreenTask(void *);
-static void sendTask(void *);
-static void sendStatusToEthernetTask(void *);
+static void esp01Task(void *); // tarea encargada de configurar la ESP01
+static void ligthRedTask(void *); // tarea de atender a la interrucion de la luz roja
+static void ligthYellowTask(void *); // tarea de atender a la interrucion de la luz amarilla
+static void ligthGreenTask(void *); // tarea de atender a la interrucion de la luz verde
+static void receiveQueueTask(void *); // tarea que recibe los mensajes
+static void sendStatusToEsp01Task(void *); // tarea encargada de enviar mensajes a la ESP01
 
 static void copyMessage(struct Message, struct Message *);
 static void decideAction(struct Message, struct Message);
-static bool_t sendCmd(CommandEsp8266_t);
+static bool_t sendCmd(CommandEsp8266_t); // envia un comando a la ESP01
 
-static void initIRQ();
-void GPIO0_IRQHandler(void);
-void GPIO1_IRQHandler(void);
-void GPIO2_IRQHandler(void);
+static void initIRQ(); // configuracion de las interrupciones del micro
+void GPIO0_IRQHandler(void); // handler de la luz roja
+void GPIO1_IRQHandler(void); // handler de la luz amarilla
+void GPIO2_IRQHandler(void); // handler de la luz verde
 
 SemaphoreHandle_t xsRedLightOff = NULL;
 SemaphoreHandle_t xsRedLigthOn = NULL;
@@ -48,35 +56,9 @@ TaskHandle_t ligthRedTaskHandle;
 TaskHandle_t sendTaskHandle;
 TaskHandle_t esp01TaskHandle;
 
-static bool_t sendCmd(CommandEsp8266_t cmd) {
-	bool_t retVal = FALSE;
-
-	debugPrintString(">>>> Enviando ");
-	debugPrintlnString(CommandEsp8266ToString[cmd]);
-
-	consolePrintString(CommandEsp8266ToString[cmd]);
-
-	retVal = waitForReceiveStringOrTimeoutBlocking( ESP01_UART,
-			esp01Responses[cmd], 4, 5000);
-
-	if (retVal) {
-		debugPrintString(">>>>    Exito al enviar : ");debugPrintlnString(
-				CommandEsp8266ToString[cmd]);
-	} else {
-		debugPrintString(">>>>    Error al enviar : ");debugPrintlnString(
-				CommandEsp8266ToString[cmd]);
-		return retVal;
-	}
-
-	return TRUE;
-}
-
 static void esp01Task(void *p) {
 
-	portTickType xPeriodicity = 20 / portTICK_RATE_MS;
-	portTickType xLastWakeTime = xTaskGetTickCount();
-
-	gpioWrite(LED1, ON);
+	gpioWrite(LEDR, ON);
 
 	consolePrintConfigUart(ESP01_UART, DEFAULT_BAUD_RATE);
 	debugPrintConfigUart(UART_USB, DEFAULT_BAUD_RATE );
@@ -86,15 +68,15 @@ static void esp01Task(void *p) {
 		vTaskDelay(5000 / portTICK_RATE_MS);
 	}
 
-	vTaskResume(ligthRedTaskHandle);
-	vTaskResume(ligthYellowTaskHandle);
-	vTaskResume(ligthGreenTaskHandle);
+	vTaskResume(ligthRedTaskHandle);	// una vez iniciada correctamente
+	vTaskResume(ligthYellowTaskHandle); // la placa inicio las tareas
+	vTaskResume(ligthGreenTaskHandle);	// que atienden las luces
 
-	initIRQ();
+	initIRQ();							// configuro las interrupciones
 
-	gpioWrite(LED1, OFF);
+	gpioWrite(LEDR, OFF);				// apago el led rojo
 
-	vTaskSuspend(esp01TaskHandle);
+	vTaskSuspend(esp01TaskHandle); 		// suspendo esta tarea
 }
 
 static void ligthRedTask(void *p) {
@@ -106,7 +88,7 @@ static void ligthRedTask(void *p) {
 
 	while (1) {
 
-		if ( xSemaphoreTake( xsRedLigthOn, portMAX_DELAY) == pdTRUE) {
+		if ( xSemaphoreTake( xsRedLigthOn, portMAX_DELAY) == pdTRUE) { // si detecto bajo - alto
 			if (gpioRead(RED_LED_PORT)) {
 				ligthRedTask_Message.Led = RED_LED;
 				ligthRedTask_Message.Status = LED_ON;
@@ -114,9 +96,9 @@ static void ligthRedTask(void *p) {
 			}
 		}
 
-		if ( xSemaphoreTake( xsRedLightOff, portMAX_DELAY) == pdTRUE) {
+		if ( xSemaphoreTake( xsRedLightOff, portMAX_DELAY) == pdTRUE) { // si detecto alto - bajo
 			if (!gpioRead(RED_LED_PORT)) {
-				ligthRedTask_Message.Led = RED_LED;
+				ligthRedTask_Message.Led = RED_LED;						// para esta version no se tuvo en cuenta el estado
 				ligthRedTask_Message.Status = LED_OFF;
 				// xQueueSend(Buffer, &ligthRedTask_Message, portMAX_DELAY);
 			}
@@ -133,7 +115,7 @@ static void ligthYellowTask(void *p) {
 	portTickType xPeriodicity = 20 / portTICK_RATE_MS;
 	portTickType xLastWakeTime = xTaskGetTickCount();
 	while (1) {
-		if ( xSemaphoreTake( xsYellowLigthOn, portMAX_DELAY) == pdTRUE) {
+		if ( xSemaphoreTake( xsYellowLigthOn, portMAX_DELAY) == pdTRUE) { 	// si detecto bajo - alto
 			if (gpioRead(YELLOW_LED_PORT)) {
 				ligthYellowTask_Message.Led = YELLOW_LED;
 				ligthYellowTask_Message.Status = LED_ON;
@@ -141,9 +123,9 @@ static void ligthYellowTask(void *p) {
 			}
 		}
 
-		if ( xSemaphoreTake( xsYellowLightOff, portMAX_DELAY) == pdTRUE) {
+		if ( xSemaphoreTake( xsYellowLightOff, portMAX_DELAY) == pdTRUE) { 	// si detecto alto - bajo
 			if (!gpioRead(YELLOW_LED_PORT)) {
-				ligthYellowTask_Message.Led = YELLOW_LED;
+				ligthYellowTask_Message.Led = YELLOW_LED;					// para esta version no se tuvo en cuenta el estado
 				ligthYellowTask_Message.Status = LED_OFF;
 				// xQueueSend(Buffer, &ligthYellowTask_Message, portMAX_DELAY);
 			}
@@ -154,30 +136,75 @@ static void ligthYellowTask(void *p) {
 }
 
 static void ligthGreenTask(void *p) {
-	xQueueHandle Buffer = *(xQueueHandle *) p;
-	struct Message ligthGreenTask_Message;
+	xQueueHandle buffer = *(xQueueHandle *) p;
+	struct Message ligthGreenTaskMessage;
 
 	portTickType xPeriodicity = 20 / portTICK_RATE_MS;
 	portTickType xLastWakeTime = xTaskGetTickCount();
 	while (1) {
-		if ( xSemaphoreTake( xsGreenLigthOn, portMAX_DELAY) == pdTRUE) {
+		if ( xSemaphoreTake( xsGreenLigthOn, portMAX_DELAY) == pdTRUE) { 	// si detecto bajo - alto
 			if (gpioRead(GREEN_LED_PORT)) {
-				ligthGreenTask_Message.Led = GREEN_LED;
-				ligthGreenTask_Message.Status = LED_ON;
-				xQueueSend(Buffer, &ligthGreenTask_Message, portMAX_DELAY);
+				ligthGreenTaskMessage.Led = GREEN_LED;
+				ligthGreenTaskMessage.Status = LED_ON;
+				xQueueSend(buffer, &ligthGreenTaskMessage, portMAX_DELAY);
 			}
 		}
 
-		if ( xSemaphoreTake( xsGreenLightOff, portMAX_DELAY) == pdTRUE) {
+		if ( xSemaphoreTake( xsGreenLightOff, portMAX_DELAY) == pdTRUE) { 	// si detecto alto - bajo
 			if (!gpioRead(GREEN_LED_PORT)) {
-				ligthGreenTask_Message.Led = GREEN_LED;
-				ligthGreenTask_Message.Status = LED_OFF;
-				// xQueueSend(Buffer, &ligthGreenTask_Message, portMAX_DELAY);
+				ligthGreenTaskMessage.Led = GREEN_LED;						// para esta version no se tuvo en cuenta el estado
+				ligthGreenTaskMessage.Status = LED_OFF;
+				// xQueueSend(buffer, &ligthGreenTaskMessage, portMAX_DELAY);
 			}
 		}
 
 		//vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
 	}
+}
+
+static void receiveQueueTask(void * a) {
+	xQueueHandle buffer = *(xQueueHandle *) a;
+	struct Message sendingMessage;
+	static struct Message oldMessage;
+	while (1) {
+		if (xQueueReceive(buffer, &sendingMessage, portMAX_DELAY)) {
+			decideAction(sendingMessage, oldMessage);
+			copyMessage(sendingMessage, &oldMessage);
+			vTaskDelay(1 / portTICK_RATE_MS);
+		}
+	}
+}
+
+static void sendStatusToEsp01Task(void * a) {
+	while (1) {
+		debugPrintlnString("Cruzar\r\n");
+		sendCmd(CMD_CIPSEND);
+		consolePrintString("Cruzar\r\n");
+		vTaskDelay(1000 / portTICK_RATE_MS);
+	}
+}
+
+static bool_t sendCmd(CommandEsp8266_t cmd) {
+	bool_t retValue = FALSE;
+
+	debugPrintString(">>>> Enviando ");
+	debugPrintlnString(CommandEsp8266ToString[cmd]);
+
+	consolePrintString(CommandEsp8266ToString[cmd]);
+
+	retValue = waitForReceiveStringOrTimeoutBlocking( ESP01_UART,
+			esp01Responses[cmd], 4, 5000);
+
+	if (retValue) {
+		debugPrintString(">>>>    Exito al enviar : ");debugPrintlnString(
+				CommandEsp8266ToString[cmd]);
+	} else {
+		debugPrintString(">>>>    Error al enviar : ");debugPrintlnString(
+				CommandEsp8266ToString[cmd]);
+		return retValue;
+	}
+
+	return TRUE;
 }
 
 static void copyMessage(struct Message src, struct Message * dst) {
@@ -188,69 +215,49 @@ static void copyMessage(struct Message src, struct Message * dst) {
 
 static void decideAction(struct Message new, struct Message old) {
 	// todo: In this implementation the turn off leds states were not taken into account
+
 	vTaskSuspend(sendStatusToEthernetHandle);
-	if (old.Led == YELLOW_LED && new.Led == GREEN_LED) {
+
+	if (old.Led == YELLOW_LED && new.Led == GREEN_LED) { // el semaforo esta en verde
 		debugPrintlnString("Cruzar\r\n");
 		vTaskResume(sendStatusToEthernetHandle);
 		return;
 	}
 
-	if (old.Led == GREEN_LED && new.Led == YELLOW_LED) {
+	if (old.Led == GREEN_LED && new.Led == YELLOW_LED) { // el semaforo se esta por poner en rojo
 		debugPrintlnString("Apurate\r\n");
 		return;
 	}
 
-	debugPrintlnString("Esperar\r\n");
+	debugPrintlnString("Esperar\r\n"); // cualquier otro estado el sistema indica que no se puede cruzar
 	return;
 
-}
-
-static void sendTask(void * a) {
-	xQueueHandle Buffer = *(xQueueHandle *) a;
-	struct Message Sending_Message;
-	static struct Message oldMessage;
-	while (1) {
-		if (xQueueReceive(Buffer, &Sending_Message, portMAX_DELAY)) {
-			decideAction(Sending_Message, oldMessage);
-			copyMessage(Sending_Message, &oldMessage);
-			vTaskDelay(1 / portTICK_RATE_MS);
-		}
-	}
-}
-
-static void sendStatusToEthernetTask(void * a) {
-	while (1) {
-		debugPrintlnString("Cruzar\r\n");
-		sendCmd(CMD_CIPSEND);
-		consolePrintString("Cruzar\r\n");
-		vTaskDelay(500 / portTICK_RATE_MS);
-	}
 }
 
 static void initIRQ() {
 	Chip_PININT_Init(LPC_GPIO_PIN_INT);
 
-	Chip_SCU_GPIOIntPinSel(0, 3, 0); //Mapeo del pin donde ocurrirá el evento y
+	Chip_SCU_GPIOIntPinSel(CH0, GPIO_3, PIN_0); 				//Mapeo del pin donde ocurrirá el evento y
 
-	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH0); //Se configura el canal
-	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH0); //Se configura para que el
-	Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH0); //Se configura para que el
+	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH0); 	//Se configura el canal
+	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH0);
+	Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH0);
 	NVIC_SetPriority(PIN_INT0_IRQn, 5);
 	NVIC_EnableIRQ(PIN_INT0_IRQn);
 
-	Chip_SCU_GPIOIntPinSel(1, 3, 3); //Mapeo del pin donde ocurrirá el evento y
+	Chip_SCU_GPIOIntPinSel(CH1, GPIO_3, PIN_3);
 
-	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH1); //Se configura el canal
-	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH1); //Se configura para que el
-	Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH1); //Se configura para que el
+	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH1);
+	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH1);
+	Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH1);
 	NVIC_SetPriority(PIN_INT1_IRQn, 5);
 	NVIC_EnableIRQ(PIN_INT1_IRQn);
 
-	Chip_SCU_GPIOIntPinSel(2, 3, 4); //Mapeo del pin donde ocurrirá el evento y
+	Chip_SCU_GPIOIntPinSel(CH2, GPIO_3, PIN_4);
 
-	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH2); //Se configura el canal
-	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH2); //Se configura para que el
-	Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH2); //Se configura para que el
+	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH2);
+	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH2);
+	Chip_PININT_EnableIntHigh(LPC_GPIO_PIN_INT, PININTCH2);
 	NVIC_SetPriority(PIN_INT2_IRQn, 5);
 	NVIC_EnableIRQ(PIN_INT2_IRQn);
 }
@@ -350,7 +357,7 @@ int main(void) {
 			&ligthGreenTaskHandle
 			);
 
-	xTaskCreate(sendTask,
+	xTaskCreate(receiveQueueTask,
 			(const char *) "send",
 			configMINIMAL_STACK_SIZE * 2,
 			&sendBuffer,
@@ -358,7 +365,7 @@ int main(void) {
 			&sendTaskHandle
 			);
 
-	xTaskCreate(sendStatusToEthernetTask,
+	xTaskCreate(sendStatusToEsp01Task,
 			(const char *) "sendStatusToEthernet",
 			configMINIMAL_STACK_SIZE * 2,
 			&sendBuffer,
