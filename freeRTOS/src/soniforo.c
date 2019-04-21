@@ -68,7 +68,7 @@ static const char CommandEsp8266ToString[][MAX_COMMAND_LENGHT] = { "AT\r\n", //1
 		"AT+RST\r\n", //2
 		"AT+CWMODE=1\r\n", //3
 		"AT+CWMODE=2\r\n", //4
-		"AT+CWSAP=\"Soniforo_CIAA\",\"\",10,0\r\n", //5
+		"AT+CWSAP=\"Soniforo_CIAA\",\"\",8,0\r\n", //5
 		"AT+CWDHCP=0,1\r\n", //6
 		"AT+CWDHCP=1,1\r\n", //7
 		"AT+CIPSTART=3,\"UDP\",\"0\",0,4096,2\r\n", //8
