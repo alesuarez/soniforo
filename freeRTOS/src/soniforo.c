@@ -2,21 +2,35 @@
 #include "FreeRTOSConfig.h"
 #include "task.h"
 #include "semphr.h"
-// sAPI header
 #include "sapi.h"
+
+#include "soniforo.h"
 
 #define RED_LED_PORT			GPIO0
 #define YELLOW_LED_PORT			GPIO1
 #define GREEN_LED_PORT 			GPIO2
-#define MAX_COMMAND_LENGHT	 	45
-#define COMMAND_INIT_LENGHT	 	12
+
 #define ESP01_UART 				UART_232
 #define DEFAULT_BAUD_RATE 		115200
 
 CONSOLE_PRINT_ENABLE
 DEBUG_PRINT_ENABLE
 
-void initIRQ();
+static void esp01Task(void *);
+static void ligthRedTask(void *);
+static void ligthYellowTask(void *);
+static void ligthGreenTask(void *);
+static void sendTask(void *);
+static void sendStatusToEthernetTask(void *);
+
+static void copyMessage(struct Message, struct Message *);
+static void decideAction(struct Message, struct Message);
+static bool_t sendCmd(CommandEsp8266_t);
+
+static void initIRQ();
+void GPIO0_IRQHandler(void);
+void GPIO1_IRQHandler(void);
+void GPIO2_IRQHandler(void);
 
 SemaphoreHandle_t xsRedLightOff = NULL;
 SemaphoreHandle_t xsRedLigthOn = NULL;
@@ -34,73 +48,7 @@ TaskHandle_t ligthRedTaskHandle;
 TaskHandle_t sendTaskHandle;
 TaskHandle_t esp01TaskHandle;
 
-typedef enum {
-	LED_ON, LED_OFF
-} Led_Status;
-
-typedef enum {
-	RED_LED, YELLOW_LED, GREEN_LED
-} Led_Name;
-
-struct Message { //Estructura con formato del mensaje
-	Led_Name Led;
-	Led_Status Status;
-	int32_t Time;
-};
-
-typedef enum CommandEsp8266 {
-	CMD_AT, //1
-	CMD_RST, //2
-	CMD_CWMODE_1, //3
-	CMD_CWMODE_2, //4
-	CMD_CWSAP, //5
-	CMD_CWDHCP_0_1, //6
-	CMD_CWDHCP_1_1, //7
-	CMD_CIPSTART, //8
-	CMD_CIPSEND, //9
-	CMD_CIPMUX_1, //10
-	CMD_CIPDINFO_1, //11
-	CMD_CIPSTATUS_Q, //12
-	CMD_CWAUTOCONN_0 //13
-} CommandEsp8266_t;
-
-static const char CommandEsp8266ToString[][MAX_COMMAND_LENGHT] = { "AT\r\n", //1
-		"AT+RST\r\n", //2
-		"AT+CWMODE=1\r\n", //3
-		"AT+CWMODE=2\r\n", //4
-		"AT+CWSAP=\"Soniforo_CIAA\",\"\",8,0\r\n", //5
-		"AT+CWDHCP=0,1\r\n", //6
-		"AT+CWDHCP=1,1\r\n", //7
-		"AT+CIPSTART=3,\"UDP\",\"0\",0,4096,2\r\n", //8
-		"AT+CIPSEND=3,8,\"192.168.4.255\",4096\r\n", //9
-		"AT+CIPMUX=1\r\n", //10
-		"AT+CIPDINFO=1\r\n", //11
-		"AT+CIPSTATUS?\r\n", //12
-		"AT+CWAUTOCONN=0\r\n" //13
-		};
-
-static char esp01Responses[][MAX_COMMAND_LENGHT] = { "AT\r\n", //1
-		"AT+RST\r\n", //2
-		"CWMODE=1\r\n", //3
-		"CWMODE=2\r\n", //4
-		"OK\r\n", //5
-		"OK\r\n", //6
-		"CWDHCP=1,1\r\n", //7
-		"3,CONNECT\r\n", //8
-		"OK\r\n", //9
-		"CIPMUX=1\r\n", //10
-		"CIPDINFO=1\r\n", //11
-		"STATUS:5\r\n", //12
-		"CWAUTOCONN=0\r\n" //13
-
-		};
-
-static CommandEsp8266_t initVector[COMMAND_INIT_LENGHT] = { CMD_AT, CMD_RST,
-		CMD_CWMODE_1, CMD_CIPMUX_1, CMD_CIPDINFO_1, CMD_CWAUTOCONN_0,
-		CMD_CWDHCP_1_1, CMD_CIPSTATUS_Q, CMD_CWMODE_2, CMD_CWSAP,
-		CMD_CWDHCP_0_1, CMD_CIPSTART};
-
-bool_t sendCmd(CommandEsp8266_t cmd) {
+static bool_t sendCmd(CommandEsp8266_t cmd) {
 	bool_t retVal = FALSE;
 
 	debugPrintString(">>>> Enviando ");
@@ -122,7 +70,8 @@ bool_t sendCmd(CommandEsp8266_t cmd) {
 
 	return TRUE;
 }
-void esp01Task(void *p) {
+
+static void esp01Task(void *p) {
 
 	portTickType xPeriodicity = 20 / portTICK_RATE_MS;
 	portTickType xLastWakeTime = xTaskGetTickCount();
@@ -148,7 +97,7 @@ void esp01Task(void *p) {
 	vTaskSuspend(esp01TaskHandle);
 }
 
-void ligthRedTask(void *p) {
+static void ligthRedTask(void *p) {
 	xQueueHandle Buffer = *(xQueueHandle *) p;
 	struct Message ligthRedTask_Message;
 
@@ -177,7 +126,7 @@ void ligthRedTask(void *p) {
 	}
 }
 
-void ligthYellowTask(void *p) {
+static void ligthYellowTask(void *p) {
 	xQueueHandle Buffer = *(xQueueHandle *) p;
 	struct Message ligthYellowTask_Message;
 
@@ -204,7 +153,7 @@ void ligthYellowTask(void *p) {
 	}
 }
 
-void ligthGreenTask(void *p) {
+static void ligthGreenTask(void *p) {
 	xQueueHandle Buffer = *(xQueueHandle *) p;
 	struct Message ligthGreenTask_Message;
 
@@ -231,13 +180,13 @@ void ligthGreenTask(void *p) {
 	}
 }
 
-void copyMessage(struct Message src, struct Message * dst) {
+static void copyMessage(struct Message src, struct Message * dst) {
 	dst->Led = src.Led;
 	dst->Status = src.Status;
 	dst->Time = src.Time;
 }
 
-void decideAction(struct Message new, struct Message old) {
+static void decideAction(struct Message new, struct Message old) {
 	// todo: In this implementation the turn off leds states were not taken into account
 	vTaskSuspend(sendStatusToEthernetHandle);
 	if (old.Led == YELLOW_LED && new.Led == GREEN_LED) {
@@ -256,7 +205,7 @@ void decideAction(struct Message new, struct Message old) {
 
 }
 
-void send(void * a) {
+static void sendTask(void * a) {
 	xQueueHandle Buffer = *(xQueueHandle *) a;
 	struct Message Sending_Message;
 	static struct Message oldMessage;
@@ -269,7 +218,7 @@ void send(void * a) {
 	}
 }
 
-void sendStatusToEthernet(void * a) {
+static void sendStatusToEthernetTask(void * a) {
 	while (1) {
 		debugPrintlnString("Cruzar\r\n");
 		sendCmd(CMD_CIPSEND);
@@ -278,7 +227,7 @@ void sendStatusToEthernet(void * a) {
 	}
 }
 
-void initIRQ() {
+static void initIRQ() {
 	Chip_PININT_Init(LPC_GPIO_PIN_INT);
 
 	Chip_SCU_GPIOIntPinSel(0, 3, 0); //Mapeo del pin donde ocurrirá el evento y
@@ -401,7 +350,7 @@ int main(void) {
 			&ligthGreenTaskHandle
 			);
 
-	xTaskCreate(send,
+	xTaskCreate(sendTask,
 			(const char *) "send",
 			configMINIMAL_STACK_SIZE * 2,
 			&Send_Buf,
@@ -409,7 +358,7 @@ int main(void) {
 			&sendTaskHandle
 			);
 
-	xTaskCreate(sendStatusToEthernet,
+	xTaskCreate(sendStatusToEthernetTask,
 			(const char *) "sendStatusToEthernet",
 			configMINIMAL_STACK_SIZE * 2,
 			&Send_Buf,
@@ -436,7 +385,9 @@ int main(void) {
 
 	// ---------- REPETIR POR SIEMPRE --------------------------
 	while ( TRUE) {
-		gpioWrite(LED3, OFF);
+		gpioWrite(LED1, ON);
+		gpioWrite(LED2, ON);
+		gpioWrite(LED3, ON);
 		// Si cae en este while 1 significa que no pudo iniciar el scheduler
 	}
 
