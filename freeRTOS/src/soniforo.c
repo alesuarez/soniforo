@@ -106,7 +106,7 @@ static void ligthRedTask(void *p) {
 			}
 		}
 
-		//vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
+		vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
 	}
 }
 
@@ -133,7 +133,7 @@ static void ligthYellowTask(void *p) {
 			}
 		}
 
-		//vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
+		vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
 	}
 }
 
@@ -160,7 +160,7 @@ static void ligthGreenTask(void *p) {
 			}
 		}
 
-		//vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
+		vTaskDelayUntil(&xLastWakeTime, xPeriodicity);
 	}
 }
 
@@ -194,7 +194,7 @@ static bool_t sendCmd(CommandEsp8266_t cmd) {
 
 	consolePrintString(CommandEsp8266ToString[cmd]);
 
-	retValue = waitForReceiveStringOrTimeoutBlocking( ESP01_UART,
+	retValue = waitForReceiveStringOrTimeout( ESP01_UART,
 			esp01Responses[cmd], 4, 5000);
 
 	if (retValue) {
