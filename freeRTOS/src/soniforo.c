@@ -6,6 +6,8 @@
 
 #include "soniforo.h"
 
+#define isHigh 					gpioRead
+
 #define RED_LED_PORT			GPIO0
 #define YELLOW_LED_PORT			GPIO1
 #define GREEN_LED_PORT 			GPIO2
@@ -32,6 +34,7 @@ static void ligthYellowTask(void *); 		// tarea de atender a la interrucion de l
 static void ligthGreenTask(void *); 		// tarea de atender a la interrucion de la luz verde
 static void receiveQueueTask(void *); 		// tarea que recibe los mensajes
 static void sendStatusToEsp01Task(void *); 	// tarea encargada de enviar mensajes a la ESP01
+static void blinkLedConfigurationTask(void *); 	// tarea encargada de parpadear el led verde mientras se esta configurando la ESP
 
 static void copyMessage(struct Message, struct Message *);
 static void decideAction(struct Message, struct Message);
@@ -57,10 +60,9 @@ TaskHandle_t ligthGreenTaskHandle;
 TaskHandle_t ligthRedTaskHandle;
 TaskHandle_t sendTaskHandle;
 TaskHandle_t esp01TaskHandle;
+TaskHandle_t blinkLedConfigurationTaskHandle;
 
 static void esp01Task(void *p) {
-
-	gpioWrite(LEDR, ON);
 
 	consolePrintConfigUart(ESP01_UART, DEFAULT_BAUD_RATE);
 	debugPrintConfigUart(UART_USB, DEFAULT_BAUD_RATE );
@@ -74,11 +76,11 @@ static void esp01Task(void *p) {
 	vTaskResume(ligthYellowTaskHandle); // la placa inicio las tareas
 	vTaskResume(ligthGreenTaskHandle);	// que atienden las luces
 
-	initIRQ();							// configuro las interrupciones
-
-	gpioWrite(LEDR, OFF);				// apago el led rojo
+	vTaskSuspend(blinkLedConfigurationTaskHandle); 		// suspendo esta tarea
+	gpioWrite( LED3, ON );
 
 	vTaskSuspend(esp01TaskHandle); 		// suspendo esta tarea
+
 }
 
 static void ligthRedTask(void *p) {
@@ -91,7 +93,7 @@ static void ligthRedTask(void *p) {
 	while (1) {
 
 		if ( xSemaphoreTake( xsRedLigthOn, portMAX_DELAY) == pdTRUE) { // si detecto bajo - alto
-			if (gpioRead(RED_LED_PORT)) {
+			if (isHigh(RED_LED_PORT)) {
 				ligthRedTask_Message.Led = RED_LED;
 				ligthRedTask_Message.Status = LED_ON;
 				xQueueSend(Buffer, &ligthRedTask_Message, portMAX_DELAY);
@@ -99,7 +101,7 @@ static void ligthRedTask(void *p) {
 		}
 
 		if ( xSemaphoreTake( xsRedLightOff, portMAX_DELAY) == pdTRUE) { // si detecto alto - bajo
-			if (!gpioRead(RED_LED_PORT)) {
+			if (!isHigh(RED_LED_PORT)) {
 				ligthRedTask_Message.Led = RED_LED;						// para esta version no se tuvo en cuenta el estado
 				ligthRedTask_Message.Status = LED_OFF;
 				// xQueueSend(Buffer, &ligthRedTask_Message, portMAX_DELAY);
@@ -118,7 +120,7 @@ static void ligthYellowTask(void *p) {
 	portTickType xLastWakeTime = xTaskGetTickCount();
 	while (1) {
 		if ( xSemaphoreTake( xsYellowLigthOn, portMAX_DELAY) == pdTRUE) { 	// si detecto bajo - alto
-			if (gpioRead(YELLOW_LED_PORT)) {
+			if (isHigh(YELLOW_LED_PORT)) {
 				ligthYellowTask_Message.Led = YELLOW_LED;
 				ligthYellowTask_Message.Status = LED_ON;
 				xQueueSend(Buffer, &ligthYellowTask_Message, portMAX_DELAY);
@@ -126,7 +128,7 @@ static void ligthYellowTask(void *p) {
 		}
 
 		if ( xSemaphoreTake( xsYellowLightOff, portMAX_DELAY) == pdTRUE) { 	// si detecto alto - bajo
-			if (!gpioRead(YELLOW_LED_PORT)) {
+			if (!isHigh(YELLOW_LED_PORT)) {
 				ligthYellowTask_Message.Led = YELLOW_LED;					// para esta version no se tuvo en cuenta el estado
 				ligthYellowTask_Message.Status = LED_OFF;
 				// xQueueSend(Buffer, &ligthYellowTask_Message, portMAX_DELAY);
@@ -145,7 +147,7 @@ static void ligthGreenTask(void *p) {
 	portTickType xLastWakeTime = xTaskGetTickCount();
 	while (1) {
 		if ( xSemaphoreTake( xsGreenLigthOn, portMAX_DELAY) == pdTRUE) { 	// si detecto bajo - alto
-			if (gpioRead(GREEN_LED_PORT)) {
+			if (isHigh(GREEN_LED_PORT)) {
 				ligthGreenTaskMessage.Led = GREEN_LED;
 				ligthGreenTaskMessage.Status = LED_ON;
 				xQueueSend(buffer, &ligthGreenTaskMessage, portMAX_DELAY);
@@ -153,7 +155,7 @@ static void ligthGreenTask(void *p) {
 		}
 
 		if ( xSemaphoreTake( xsGreenLightOff, portMAX_DELAY) == pdTRUE) { 	// si detecto alto - bajo
-			if (!gpioRead(GREEN_LED_PORT)) {
+			if (!isHigh(GREEN_LED_PORT)) {
 				ligthGreenTaskMessage.Led = GREEN_LED;						// para esta version no se tuvo en cuenta el estado
 				ligthGreenTaskMessage.Status = LED_OFF;
 				// xQueueSend(buffer, &ligthGreenTaskMessage, portMAX_DELAY);
@@ -178,11 +180,23 @@ static void receiveQueueTask(void * a) {
 }
 
 static void sendStatusToEsp01Task(void * a) {
+	portTickType xPeriodicity =  800 / portTICK_RATE_MS;
+	portTickType xLastWakeTime = xTaskGetTickCount();
 	while (1) {
 		debugPrintlnString("Cruzar\r\n");
 		sendCmd(CMD_CIPSEND);
+		vTaskDelay(20 / portTICK_RATE_MS);
 		consolePrintString("Cruzar\r\n");
-		vTaskDelay(1000 / portTICK_RATE_MS);
+		vTaskDelayUntil(&xLastWakeTime, xPeriodicity );
+	}
+}
+
+static void blinkLedConfigurationTask(void * a) {
+	portTickType xPeriodicity =  500 / portTICK_RATE_MS;
+	portTickType xLastWakeTime = xTaskGetTickCount();
+	while (1) {
+	 gpioToggle(LED3);
+	 vTaskDelayUntil(&xLastWakeTime, xPeriodicity );
 	}
 }
 
@@ -194,8 +208,8 @@ static bool_t sendCmd(CommandEsp8266_t cmd) {
 
 	consolePrintString(CommandEsp8266ToString[cmd]);
 
-	retValue = waitForReceiveStringOrTimeout( ESP01_UART,
-			esp01Responses[cmd], 4, 5000);
+	retValue = waitForReceiveStringOrTimeoutBlocking( ESP01_UART,
+				esp01Responses[cmd], 4, 5000);
 
 	if (retValue) {
 		debugPrintString(">>>>    Exito al enviar : ");
@@ -318,6 +332,8 @@ int main(void) {
 
 	boardConfig();
 
+	initIRQ();							// configuro las interrupciones
+
 	debugPrintConfigUart( UART_USB, DEFAULT_BAUD_RATE );
 	debugPrintlnString("Inicio de programa... \r\n");
 
@@ -331,8 +347,6 @@ int main(void) {
 	xsGreenLigthOn = xSemaphoreCreateBinary();
 
 	sendBuffer = xQueueCreate(10, sizeof(struct Message));
-
-	gpioWrite(LED3, ON);
 
 	// Crear tarea en freeRTOS
 	xTaskCreate(ligthRedTask,
@@ -381,6 +395,14 @@ int main(void) {
 			&sendBuffer,
 			tskIDLE_PRIORITY + 1,
 			&esp01TaskHandle
+			);
+
+	xTaskCreate(blinkLedConfigurationTask,
+			(const char *) "blinkLedTask",
+			configMINIMAL_STACK_SIZE * 2,
+			&sendBuffer,
+			tskIDLE_PRIORITY + 1,
+			&blinkLedConfigurationTaskHandle
 			);
 
 	vTaskSuspend(sendStatusToEthernetHandle);
