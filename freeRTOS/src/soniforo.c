@@ -25,6 +25,8 @@
 
 #define ISR_PRIORITY			5
 
+#define MAX_ATTEMPT				3
+
 CONSOLE_PRINT_ENABLE
 DEBUG_PRINT_ENABLE
 
@@ -39,6 +41,7 @@ static void blinkLedConfigurationTask(void *); 	// tarea encargada de parpadear 
 static void copyMessage(struct Message, struct Message *);
 static void decideAction(struct Message, struct Message);
 static bool_t sendCmd(CommandEsp8266_t); // envia un comando a la ESP01
+static void errorSystem(); 					// prende todos los led de la CIAA si se produce algun error
 
 static void initIRQ(); 			// configuracion de las interrupciones del micro
 void GPIO0_IRQHandler(void); 	// handler de la luz roja
@@ -66,9 +69,18 @@ static void esp01Task(void *p) {
 
 	consolePrintConfigUart(ESP01_UART, DEFAULT_BAUD_RATE);
 	debugPrintConfigUart(UART_USB, DEFAULT_BAUD_RATE );
-
+	int attempts = 0;
 	for (int i = 0; i < COMMAND_INIT_LENGHT; i++) {
-		sendCmd(initVector[i]);
+		if (!sendCmd(initVector[i])) {
+			vTaskDelay(2000 / portTICK_RATE_MS);
+			sendCmd(initVector[i - 1]);
+			vTaskDelay(5000 / portTICK_RATE_MS);
+			i -= 1;
+			attempsts++;
+			if (attempsts > MAX_ATTEMPT ) {
+				errorSystem();
+			}
+		}
 		vTaskDelay(5000 / portTICK_RATE_MS);
 	}
 
@@ -81,6 +93,14 @@ static void esp01Task(void *p) {
 
 	vTaskSuspend(esp01TaskHandle); 		// suspendo esta tarea
 
+}
+
+static void errorSystem() {
+	while(1) {
+		gpioWrite( LED1, ON );
+		gpioWrite( LED2, ON );
+		gpioWrite( LED3, ON );
+	}
 }
 
 static void ligthRedTask(void *p) {
