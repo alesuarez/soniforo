@@ -33,7 +33,9 @@
     - src/**
   :support:
     - test/support
-
+  :include:
+    - inc/**
+    - ../libs/**
 :defines:
   # in order to add common defines:
   #  1) remove the trailing [] from the :common: section
