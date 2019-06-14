@@ -1,22 +1,10 @@
-#ifndef FREERTOS_INC_SONIFORO_H_
-#define FREERTOS_INC_SONIFORO_H_
+#ifndef FREERTOS_INC_ESP_DRIVER_H_
+#define FREERTOS_INC_ESP_DRIVER_H_
+
+#include "commons.h"
 
 #define MAX_COMMAND_LENGHT	 	45
 #define COMMAND_INIT_LENGHT	 	12
-
-typedef enum {
-	LED_ON, LED_OFF
-} Led_Status;
-
-typedef enum {
-	RED_LED, YELLOW_LED, GREEN_LED
-} Led_Name;
-
-struct Message {
-	Led_Name Led;
-	Led_Status Status;
-	int32_t Time;
-};
 
 typedef enum CommandEsp8266 {
 	CMD_AT, //1
@@ -81,4 +69,7 @@ static CommandEsp8266_t initVector[COMMAND_INIT_LENGHT] = {
 		CMD_CIPSTART
 };
 
-#endif
+
+bool_t sendCmd(CommandEsp8266_t);
+
+#endif /* FREERTOS_INC_ESP_DRIVER_H_ */

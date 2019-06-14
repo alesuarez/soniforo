@@ -70,7 +70,7 @@ bool_t spiInit( spiMap_t spi )
       Chip_SCU_PinMuxSet(0x1, 4, (SCU_MODE_PULLUP | SCU_MODE_FUNC5)); // MOSI1
 
       Chip_SCU_PinMuxSet(0x6, 1, (SCU_MODE_PULLUP | SCU_MODE_FUNC0)); // CS1 configured as GPIO
-      Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, 3, 0);
+      Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, 3, 5); //cambio a GPIO5
 
       // Initialize SSP Peripheral
       Chip_SSP_Init( LPC_SSP1 );
