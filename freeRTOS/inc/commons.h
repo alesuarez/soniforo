@@ -34,25 +34,25 @@ struct Message {
 	int32_t Time;
 };
 
+extern SemaphoreHandle_t xsRedLigthOn;
+extern SemaphoreHandle_t xsRedLightOff;
+extern SemaphoreHandle_t xsYellowLigthOn;
+extern SemaphoreHandle_t xsYellowLightOff;
+extern SemaphoreHandle_t xsGreenLigthOn;
+extern SemaphoreHandle_t xsGreenLightOff;
 
-SemaphoreHandle_t xsRedLightOff = NULL;
-SemaphoreHandle_t xsRedLigthOn = NULL;
 
-SemaphoreHandle_t xsYellowLightOff = NULL;
-SemaphoreHandle_t xsYellowLigthOn = NULL;
 
-SemaphoreHandle_t xsGreenLightOff = NULL;
-SemaphoreHandle_t xsGreenLigthOn = NULL;
-
-TaskHandle_t sendStatusToEthernetHandle;
-TaskHandle_t ligthYellowTaskHandle;
-TaskHandle_t ligthGreenTaskHandle;
-TaskHandle_t ligthRedTaskHandle;
-TaskHandle_t sendTaskHandle;
-TaskHandle_t esp01TaskHandle;
-TaskHandle_t blinkLedConfigurationTaskHandle;
+extern TaskHandle_t sendStatusToEthernetHandle;
+extern TaskHandle_t ligthYellowTaskHandle;
+extern TaskHandle_t ligthGreenTaskHandle;
+extern TaskHandle_t ligthRedTaskHandle;
+extern TaskHandle_t sendTaskHandle;
+extern TaskHandle_t esp01TaskHandle;
+extern TaskHandle_t blinkLedConfigurationTaskHandle;
 
 xQueueHandle sendBuffer;
+xQueueHandle uartQueue;
 
 
 #endif /* FREERTOS_INC_COMMONS_H_ */

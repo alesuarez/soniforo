@@ -1,6 +1,0 @@
----
-- unity.h
-- "../inc/soniforo.h"
-- "../inc/FreeRTOSConfig.h"
-- "../../libs/freertos/include/FreeRTOS.h"
-- build/temp/_test_soniforo.c

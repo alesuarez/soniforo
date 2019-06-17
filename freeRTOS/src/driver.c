@@ -1,5 +1,12 @@
 #include "driver.h"
 
+extern SemaphoreHandle_t xsRedLigthOn;
+extern SemaphoreHandle_t xsRedLightOff;
+extern SemaphoreHandle_t xsYellowLigthOn;
+extern SemaphoreHandle_t xsYellowLightOff;
+extern SemaphoreHandle_t xsGreenLigthOn;
+extern SemaphoreHandle_t xsGreenLightOff;
+
 void IRQ_init() {
 	Chip_PININT_Init(LPC_GPIO_PIN_INT);
 

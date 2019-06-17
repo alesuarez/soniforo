@@ -1,5 +1,8 @@
 #include "ligth_green_task.h"
 
+extern SemaphoreHandle_t xsGreenLigthOn;
+extern SemaphoreHandle_t xsGreenLightOff;
+
 void ligthGreenTask(void *p) {
 	xQueueHandle buffer = *(xQueueHandle *) p;
 	struct Message ligthGreenTaskMessage;

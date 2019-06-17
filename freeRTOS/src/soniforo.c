@@ -11,7 +11,7 @@ int main(void) {
 	debugPrintlnString("Inicio de programa... \r\n");
 
 	sendBuffer = xQueueCreate(10, sizeof(struct Message));
-
+	uartQueue = xQueueCreate(10, sizeof(char *));
 	// Crear tarea en freeRTOS
 	tasks_init();
 

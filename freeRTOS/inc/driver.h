@@ -13,7 +13,7 @@
 
 #define ISR_PRIORITY			5
 
-#define MAX_ATTEMPT				3
+
 
 void IRQ_init(); 				// configuracion de las interrupciones del micro
 void GPIO0_IRQHandler(void); 	// handler de la luz roja

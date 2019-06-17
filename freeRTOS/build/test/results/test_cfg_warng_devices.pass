@@ -1,0 +1,17 @@
+---
+:source:
+  :path: test
+  :file: test_cfg_warng_devices.c
+:successes:
+- :test: test_configuracion_Esp_correcta
+  :line: 9
+  :message: ''
+:failures: []
+:ignores: []
+:counts:
+  :total: 1
+  :passed: 1
+  :failed: 0
+  :ignored: 0
+:stdout: []
+:time: 0.0017650410009082407

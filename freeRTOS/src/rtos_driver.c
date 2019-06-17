@@ -7,6 +7,7 @@
 #include "cfg_warng_devices.h"
 #include "warng_devices.h"
 
+
 void tasks_init() {
 	xTaskCreate(ligthRedTask, (const char *) "ligthRedTask",
 			configMINIMAL_STACK_SIZE * 2, &sendBuffer, tskIDLE_PRIORITY + 7,

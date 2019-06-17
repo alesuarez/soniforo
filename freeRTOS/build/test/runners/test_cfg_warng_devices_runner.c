@@ -6,6 +6,8 @@
   Unity.CurrentTestName = #TestFunc; \
   Unity.CurrentTestLineNumber = TestLineNum; \
   Unity.NumberOfTests++; \
+  CMock_Init(); \
+  UNITY_CLR_DETAILS(); \
   if (TEST_PROTECT()) \
   { \
       setUp(); \
@@ -14,7 +16,9 @@
   if (TEST_PROTECT()) \
   { \
     tearDown(); \
+    CMock_Verify(); \
   } \
+  CMock_Destroy(); \
   UnityConcludeTest(); \
 }
 
@@ -23,10 +27,14 @@
 #define UNITY_INCLUDE_SETUP_STUBS
 #endif
 #include "unity.h"
+#include "cmock.h"
 #ifndef UNITY_EXCLUDE_SETJMP_H
 #include <setjmp.h>
 #endif
 #include <stdio.h>
+#include "mock_FreeRtos_test.h"
+#include "mock_sapi_test.h"
+#include "mock_uart.h"
 
 int GlobalExpectCount;
 int GlobalVerifyOrder;
@@ -35,7 +43,31 @@ char* GlobalOrderError;
 /*=======External Functions This Runner Calls=====*/
 extern void setUp(void);
 extern void tearDown(void);
+extern void test_configuracion_Esp_correcta();
 
+
+/*=======Mock Management=====*/
+static void CMock_Init(void)
+{
+  GlobalExpectCount = 0;
+  GlobalVerifyOrder = 0;
+  GlobalOrderError = NULL;
+  mock_FreeRtos_test_Init();
+  mock_sapi_test_Init();
+  mock_uart_Init();
+}
+static void CMock_Verify(void)
+{
+  mock_FreeRtos_test_Verify();
+  mock_sapi_test_Verify();
+  mock_uart_Verify();
+}
+static void CMock_Destroy(void)
+{
+  mock_FreeRtos_test_Destroy();
+  mock_sapi_test_Destroy();
+  mock_uart_Destroy();
+}
 
 /*=======Suite Setup=====*/
 static void suite_setup(void)
@@ -59,7 +91,10 @@ static int suite_teardown(int num_failures)
 void resetTest(void);
 void resetTest(void)
 {
+  CMock_Verify();
+  CMock_Destroy();
   tearDown();
+  CMock_Init();
   setUp();
 }
 
@@ -68,7 +103,9 @@ void resetTest(void)
 int main(void)
 {
   suite_setup();
-  UnityBegin("test_soniforo.c");
+  UnityBegin("test_cfg_warng_devices.c");
+  RUN_TEST(test_configuracion_Esp_correcta, 9);
 
+  CMock_Guts_MemFreeFinal();
   return suite_teardown(UnityEnd());
 }
