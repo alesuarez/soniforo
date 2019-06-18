@@ -57,8 +57,9 @@
 #include "sapi_sleep.h"                  // Use ARM ASM instructions
 #include "sapi_cyclesCounter.h"          // Use ARM Debug Registers
 #include "sapi_usb_device.h"
+#include "sapi_timer.h"
 
-// High Level drivers     
+// High Level drivers
 
 #include "sapi_stdio.h"                  // Use sapi_uart module
 
@@ -78,7 +79,7 @@
 #include "sapi_keypad.h"                 // Use sapi_gpio and sapi_delay modules
 #include "sapi_dht11.h"                  // Use sapi_gpio peripheral
 #include "sapi_lcd.h"                    // Use sapi_gpio peripherals
-#include "sapi_servo.h"                  // Use sapi_gpio modules and sapi_timer 
+#include "sapi_servo.h"                  // Use sapi_gpio modules and sapi_timer
 #include "sapi_rgb.h"                    // Use TIMER peripheral
 
 #include "sapi_esp8266.h"                // Use sapi_uart module
