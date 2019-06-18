@@ -14,6 +14,7 @@ void test_puede_cruzar_la_calle() {
 	vTaskSuspend_Expect(sendStatusToEthernetHandle);
 	sendTextUart_ExpectAndReturn("Cruzar\r\n", 1);
 	vTaskResume_Expect(sendStatusToEthernetHandle);
+
 	decideAction(mensajeActual, mensajeAnterior);
 }
 
@@ -26,6 +27,7 @@ void test_tiene_que_apurar_el_paso() {
 	vTaskSuspend_Expect(sendStatusToEthernetHandle);
 	sendTextUart_ExpectAndReturn("Apurate\r\n", 1);
 	vTaskResume_Expect(sendStatusToEthernetHandle);
+
 	decideAction(mensajeActual, mensajeAnterior);
 }
 
@@ -37,5 +39,6 @@ void test_culquier_estado_debe_esperar() {
 
 	vTaskSuspend_Expect(sendStatusToEthernetHandle);
 	sendTextUart_ExpectAndReturn("Esperar\r\n", 1);
+
 	decideAction(mensajeActual, mensajeAnterior);
 }
