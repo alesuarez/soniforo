@@ -10,7 +10,7 @@ int main(void) {
 	debugPrintConfigUart( UART_USB, DEFAULT_BAUD_RATE );
 	debugPrintlnString("Inicio de programa... \r\n");
 
-	sendBuffer = xQueueCreate(10, sizeof(struct Message));
+	sendBuffer = xQueueCreate(10, sizeof(Message));
 	uartQueue = xQueueCreate(10, sizeof(char *));
 	// Crear tarea en freeRTOS
 	tasks_init();

@@ -34,7 +34,6 @@
 #include <stdio.h>
 #include "mock_FreeRtos_test.h"
 #include "mock_sapi_test.h"
-#include "mock_uart.h"
 
 int GlobalExpectCount;
 int GlobalVerifyOrder;
@@ -43,8 +42,9 @@ char* GlobalOrderError;
 /*=======External Functions This Runner Calls=====*/
 extern void setUp(void);
 extern void tearDown(void);
-extern void test_configuracion_Esp_correcta();
-extern void test_configuracion_Esp_incorrecta();
+extern void test_debe_encolar_cuando_se_prenda_la_luz_verde();
+extern void test_debe_encolar_cuando_se_apaga_la_luz_verde();
+extern void test_no_debe_hacer_nada();
 
 
 /*=======Mock Management=====*/
@@ -55,19 +55,16 @@ static void CMock_Init(void)
   GlobalOrderError = NULL;
   mock_FreeRtos_test_Init();
   mock_sapi_test_Init();
-  mock_uart_Init();
 }
 static void CMock_Verify(void)
 {
   mock_FreeRtos_test_Verify();
   mock_sapi_test_Verify();
-  mock_uart_Verify();
 }
 static void CMock_Destroy(void)
 {
   mock_FreeRtos_test_Destroy();
   mock_sapi_test_Destroy();
-  mock_uart_Destroy();
 }
 
 /*=======Suite Setup=====*/
@@ -104,9 +101,10 @@ void resetTest(void)
 int main(void)
 {
   suite_setup();
-  UnityBegin("test_cfg_warng_devices.c");
-  RUN_TEST(test_configuracion_Esp_correcta, 8);
-  RUN_TEST(test_configuracion_Esp_incorrecta, 34);
+  UnityBegin("test_ligth_green_task.c");
+  RUN_TEST(test_debe_encolar_cuando_se_prenda_la_luz_verde, 11);
+  RUN_TEST(test_debe_encolar_cuando_se_apaga_la_luz_verde, 25);
+  RUN_TEST(test_no_debe_hacer_nada, 40);
 
   CMock_Guts_MemFreeFinal();
   return suite_teardown(UnityEnd());

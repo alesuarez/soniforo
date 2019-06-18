@@ -9,6 +9,7 @@ TaskHandle_t sendTaskHandle;
 TaskHandle_t esp01TaskHandle;
 TaskHandle_t blinkLedConfigurationTaskHandle;
 
-
+SemaphoreHandle_t xsGreenLightOff;
+SemaphoreHandle_t xsGreenLigthOn;
 
 #endif /* FREERTOS_TEST_SUPPORT_FAKE_DATA_H_ */

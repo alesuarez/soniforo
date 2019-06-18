@@ -47,6 +47,30 @@ void vTaskDelete_CMockIgnore(void);
 void vTaskDelete_CMockExpect(UNITY_LINE_TYPE cmock_line, TaskHandle_t xTaskToDelete);
 typedef void (* CMOCK_vTaskDelete_CALLBACK)(TaskHandle_t xTaskToDelete, int cmock_num_calls);
 void vTaskDelete_StubWithCallback(CMOCK_vTaskDelete_CALLBACK Callback);
+#define vTaskDelayUntil_Ignore() vTaskDelayUntil_CMockIgnore()
+void vTaskDelayUntil_CMockIgnore(void);
+#define vTaskDelayUntil_Expect(pxPreviousWakeTime, xTimeIncrement) vTaskDelayUntil_CMockExpect(__LINE__, pxPreviousWakeTime, xTimeIncrement)
+void vTaskDelayUntil_CMockExpect(UNITY_LINE_TYPE cmock_line, TickType_t* const pxPreviousWakeTime, const TickType_t xTimeIncrement);
+typedef void (* CMOCK_vTaskDelayUntil_CALLBACK)(TickType_t* const pxPreviousWakeTime, const TickType_t xTimeIncrement, int cmock_num_calls);
+void vTaskDelayUntil_StubWithCallback(CMOCK_vTaskDelayUntil_CALLBACK Callback);
+#define xTaskGetTickCount_IgnoreAndReturn(cmock_retval) xTaskGetTickCount_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void xTaskGetTickCount_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, TickType_t cmock_to_return);
+#define xTaskGetTickCount_ExpectAndReturn(cmock_retval) xTaskGetTickCount_CMockExpectAndReturn(__LINE__, cmock_retval)
+void xTaskGetTickCount_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, TickType_t cmock_to_return);
+typedef TickType_t (* CMOCK_xTaskGetTickCount_CALLBACK)(int cmock_num_calls);
+void xTaskGetTickCount_StubWithCallback(CMOCK_xTaskGetTickCount_CALLBACK Callback);
+#define xSemaphoreTake_IgnoreAndReturn(cmock_retval) xSemaphoreTake_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void xSemaphoreTake_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, BaseType_t cmock_to_return);
+#define xSemaphoreTake_ExpectAndReturn(xQueue, xTicksToWait, cmock_retval) xSemaphoreTake_CMockExpectAndReturn(__LINE__, xQueue, xTicksToWait, cmock_retval)
+void xSemaphoreTake_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, QueueHandle_t xQueue, TickType_t xTicksToWait, BaseType_t cmock_to_return);
+typedef BaseType_t (* CMOCK_xSemaphoreTake_CALLBACK)(QueueHandle_t xQueue, TickType_t xTicksToWait, int cmock_num_calls);
+void xSemaphoreTake_StubWithCallback(CMOCK_xSemaphoreTake_CALLBACK Callback);
+#define xQueueSend_IgnoreAndReturn(cmock_retval) xQueueSend_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void xQueueSend_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, BaseType_t cmock_to_return);
+#define xQueueSend_ExpectAndReturn(xQueue, pvItemToQueue, xTicksToWait, cmock_retval) xQueueSend_CMockExpectAndReturn(__LINE__, xQueue, pvItemToQueue, xTicksToWait, cmock_retval)
+void xQueueSend_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, QueueHandle_t xQueue, const void* const pvItemToQueue, TickType_t xTicksToWait, BaseType_t cmock_to_return);
+typedef BaseType_t (* CMOCK_xQueueSend_CALLBACK)(QueueHandle_t xQueue, const void* const pvItemToQueue, TickType_t xTicksToWait, int cmock_num_calls);
+void xQueueSend_StubWithCallback(CMOCK_xQueueSend_CALLBACK Callback);
 
 #if defined(__GNUC__) && !defined(__ICC) && !defined(__TMS470__)
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6 || (__GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 0)))

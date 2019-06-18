@@ -1,12 +1,12 @@
 #include "receive_queue_task.h"
-#include  "learding.h"
+#include  "learning.h"
 
-static void copyMessage(struct Message, struct Message *);
+static void copyMessage(Message, Message *);
 
 void receiveQueueTask(void * a) {
 	xQueueHandle buffer = *(xQueueHandle *) a;
-	struct Message sendingMessage;
-	static struct Message oldMessage;
+	Message sendingMessage;
+	static Message oldMessage;
 	while (1) {
 		if (xQueueReceive(buffer, &sendingMessage, portMAX_DELAY)) {
 			decideAction(sendingMessage, oldMessage);
@@ -16,7 +16,7 @@ void receiveQueueTask(void * a) {
 	}
 }
 
-static void copyMessage(struct Message src, struct Message * dst) {
+static void copyMessage(Message src, Message * dst) {
 	dst->Led = src.Led;
 	dst->Status = src.Status;
 	dst->Time = src.Time;

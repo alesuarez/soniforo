@@ -1,0 +1,23 @@
+---
+:source:
+  :path: test
+  :file: test_learning.c
+:successes:
+- :test: test_puede_cruzar_la_calle
+  :line: 8
+  :message: ''
+- :test: test_tiene_que_apurar_el_paso
+  :line: 20
+  :message: ''
+- :test: test_culquier_estado_debe_esperar
+  :line: 32
+  :message: ''
+:failures: []
+:ignores: []
+:counts:
+  :total: 3
+  :passed: 3
+  :failed: 0
+  :ignored: 0
+:stdout: []
+:time: 0.0029251719988678815

@@ -1,13 +1,25 @@
 #ifndef FREERTOS_INC_COMMONS_H_
 #define FREERTOS_INC_COMMONS_H_
+
+#ifdef TEST
+#include "FreeRtos_test.h"
+#include "sapi_test.h"
+#include "fake_data.h"
+#else
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 
 #include "task.h"
 #include "semphr.h"
 #include "sapi.h"
-#include "commons.h"
 #include "driver.h"
+
+CONSOLE_PRINT_ENABLE
+DEBUG_PRINT_ENABLE
+
+#endif
+
+
 
 #define ESP01_UART 				UART_232
 #define DEFAULT_BAUD_RATE 		115200
@@ -17,8 +29,7 @@
 #define GREEN_LED_PORT 			GPIO2
 #define isHigh 					gpioRead
 
-CONSOLE_PRINT_ENABLE
-DEBUG_PRINT_ENABLE
+
 
 typedef enum {
 	LED_ON, LED_OFF
@@ -28,11 +39,11 @@ typedef enum {
 	RED_LED, YELLOW_LED, GREEN_LED
 } Led_Name;
 
-struct Message {
+typedef struct  {
 	Led_Name Led;
 	Led_Status Status;
 	int32_t Time;
-};
+} Message;
 
 extern SemaphoreHandle_t xsRedLigthOn;
 extern SemaphoreHandle_t xsRedLightOff;

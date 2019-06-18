@@ -33,7 +33,6 @@
 #endif
 #include <stdio.h>
 #include "mock_FreeRtos_test.h"
-#include "mock_sapi_test.h"
 #include "mock_uart.h"
 
 int GlobalExpectCount;
@@ -43,8 +42,9 @@ char* GlobalOrderError;
 /*=======External Functions This Runner Calls=====*/
 extern void setUp(void);
 extern void tearDown(void);
-extern void test_configuracion_Esp_correcta();
-extern void test_configuracion_Esp_incorrecta();
+extern void test_puede_cruzar_la_calle();
+extern void test_tiene_que_apurar_el_paso();
+extern void test_culquier_estado_debe_esperar();
 
 
 /*=======Mock Management=====*/
@@ -54,19 +54,16 @@ static void CMock_Init(void)
   GlobalVerifyOrder = 0;
   GlobalOrderError = NULL;
   mock_FreeRtos_test_Init();
-  mock_sapi_test_Init();
   mock_uart_Init();
 }
 static void CMock_Verify(void)
 {
   mock_FreeRtos_test_Verify();
-  mock_sapi_test_Verify();
   mock_uart_Verify();
 }
 static void CMock_Destroy(void)
 {
   mock_FreeRtos_test_Destroy();
-  mock_sapi_test_Destroy();
   mock_uart_Destroy();
 }
 
@@ -104,9 +101,10 @@ void resetTest(void)
 int main(void)
 {
   suite_setup();
-  UnityBegin("test_cfg_warng_devices.c");
-  RUN_TEST(test_configuracion_Esp_correcta, 8);
-  RUN_TEST(test_configuracion_Esp_incorrecta, 34);
+  UnityBegin("test_learning.c");
+  RUN_TEST(test_puede_cruzar_la_calle, 8);
+  RUN_TEST(test_tiene_que_apurar_el_paso, 20);
+  RUN_TEST(test_culquier_estado_debe_esperar, 32);
 
   CMock_Guts_MemFreeFinal();
   return suite_teardown(UnityEnd());

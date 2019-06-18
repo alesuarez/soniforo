@@ -29,6 +29,12 @@ void sendUart_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_retu
 void sendUart_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, char* cmock_arg1, char* cmock_arg2, int cmock_to_return);
 typedef int (* CMOCK_sendUart_CALLBACK)(char* cmock_arg1, char* cmock_arg2, int cmock_num_calls);
 void sendUart_StubWithCallback(CMOCK_sendUart_CALLBACK Callback);
+#define sendTextUart_IgnoreAndReturn(cmock_retval) sendTextUart_CMockIgnoreAndReturn(__LINE__, cmock_retval)
+void sendTextUart_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return);
+#define sendTextUart_ExpectAndReturn(cmock_arg1, cmock_retval) sendTextUart_CMockExpectAndReturn(__LINE__, cmock_arg1, cmock_retval)
+void sendTextUart_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, char* cmock_arg1, int cmock_to_return);
+typedef int (* CMOCK_sendTextUart_CALLBACK)(char* cmock_arg1, int cmock_num_calls);
+void sendTextUart_StubWithCallback(CMOCK_sendTextUart_CALLBACK Callback);
 
 #if defined(__GNUC__) && !defined(__ICC) && !defined(__TMS470__)
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 6 || (__GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 0)))

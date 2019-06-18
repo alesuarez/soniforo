@@ -1,13 +1,6 @@
 #include "cfg_warng_devices.h"
 #include "uart.h"
-
-#ifdef TEST
-#include "FreeRtos_test.h"
-#include "sapi_test.h"
-#include "fake_data.h"
-#else 
 #include "commons.h"
-#endif
 
 char * CommandEsp8266ToString[] = {
 		"AT\r\n", //1
@@ -60,13 +53,13 @@ void esp01Task(void *p) {
 		if (!sendCmd(initVector[i])) {
 			vTaskDelay(2000 / portTICK_RATE_MS);
 			i = i - 1 < 0 ? 0 : i - 1;
-			sendCmd(initVector[i]);
 
 			attemptsValue++;
 			if (attemptsValue > MAX_ATTEMPT) {
 				gpioWrite( LED1, ON );
 				gpioWrite( LED2, ON );
 				gpioWrite( LED3, ON );
+				break;
 			}
 		}
 		vTaskDelay(5000 / portTICK_RATE_MS);

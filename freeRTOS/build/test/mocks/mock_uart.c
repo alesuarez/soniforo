@@ -8,6 +8,7 @@
 
 static const char* CMockString_cmock_arg1 = "cmock_arg1";
 static const char* CMockString_cmock_arg2 = "cmock_arg2";
+static const char* CMockString_sendTextUart = "sendTextUart";
 static const char* CMockString_sendUart = "sendUart";
 
 typedef struct _CMOCK_sendUart_CALL_INSTANCE
@@ -20,6 +21,15 @@ typedef struct _CMOCK_sendUart_CALL_INSTANCE
 
 } CMOCK_sendUart_CALL_INSTANCE;
 
+typedef struct _CMOCK_sendTextUart_CALL_INSTANCE
+{
+  UNITY_LINE_TYPE LineNumber;
+  int ReturnVal;
+  int CallOrder;
+  char* Expected_cmock_arg1;
+
+} CMOCK_sendTextUart_CALL_INSTANCE;
+
 static struct mock_uartInstance
 {
   int sendUart_IgnoreBool;
@@ -27,6 +37,11 @@ static struct mock_uartInstance
   CMOCK_sendUart_CALLBACK sendUart_CallbackFunctionPointer;
   int sendUart_CallbackCalls;
   CMOCK_MEM_INDEX_TYPE sendUart_CallInstance;
+  int sendTextUart_IgnoreBool;
+  int sendTextUart_FinalReturn;
+  CMOCK_sendTextUart_CALLBACK sendTextUart_CallbackFunctionPointer;
+  int sendTextUart_CallbackCalls;
+  CMOCK_MEM_INDEX_TYPE sendTextUart_CallInstance;
 } Mock;
 
 extern jmp_buf AbortFrame;
@@ -42,6 +57,12 @@ void mock_uart_Verify(void)
   UNITY_TEST_ASSERT(CMOCK_GUTS_NONE == Mock.sendUart_CallInstance, cmock_line, CMockStringCalledLess);
   if (Mock.sendUart_CallbackFunctionPointer != NULL)
     Mock.sendUart_CallInstance = CMOCK_GUTS_NONE;
+  if (Mock.sendTextUart_IgnoreBool)
+    Mock.sendTextUart_CallInstance = CMOCK_GUTS_NONE;
+  UNITY_SET_DETAIL(CMockString_sendTextUart);
+  UNITY_TEST_ASSERT(CMOCK_GUTS_NONE == Mock.sendTextUart_CallInstance, cmock_line, CMockStringCalledLess);
+  if (Mock.sendTextUart_CallbackFunctionPointer != NULL)
+    Mock.sendTextUart_CallInstance = CMOCK_GUTS_NONE;
 }
 
 void mock_uart_Init(void)
@@ -55,6 +76,8 @@ void mock_uart_Destroy(void)
   memset(&Mock, 0, sizeof(Mock));
   Mock.sendUart_CallbackFunctionPointer = NULL;
   Mock.sendUart_CallbackCalls = 0;
+  Mock.sendTextUart_CallbackFunctionPointer = NULL;
+  Mock.sendTextUart_CallbackCalls = 0;
   GlobalExpectCount = 0;
   GlobalVerifyOrder = 0;
 }
@@ -134,5 +157,77 @@ void sendUart_StubWithCallback(CMOCK_sendUart_CALLBACK Callback)
 {
   Mock.sendUart_IgnoreBool = (int)0;
   Mock.sendUart_CallbackFunctionPointer = Callback;
+}
+
+int sendTextUart(char* cmock_arg1)
+{
+  UNITY_LINE_TYPE cmock_line = TEST_LINE_NUM;
+  CMOCK_sendTextUart_CALL_INSTANCE* cmock_call_instance;
+  UNITY_SET_DETAIL(CMockString_sendTextUart);
+  cmock_call_instance = (CMOCK_sendTextUart_CALL_INSTANCE*)CMock_Guts_GetAddressFor(Mock.sendTextUart_CallInstance);
+  Mock.sendTextUart_CallInstance = CMock_Guts_MemNext(Mock.sendTextUart_CallInstance);
+  if (Mock.sendTextUart_IgnoreBool)
+  {
+    UNITY_CLR_DETAILS();
+    if (cmock_call_instance == NULL)
+      return Mock.sendTextUart_FinalReturn;
+    Mock.sendTextUart_FinalReturn = cmock_call_instance->ReturnVal;
+    return cmock_call_instance->ReturnVal;
+  }
+  if (Mock.sendTextUart_CallbackFunctionPointer != NULL)
+  {
+    return Mock.sendTextUart_CallbackFunctionPointer(cmock_arg1, Mock.sendTextUart_CallbackCalls++);
+  }
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringCalledMore);
+  cmock_line = cmock_call_instance->LineNumber;
+  if (cmock_call_instance->CallOrder > ++GlobalVerifyOrder)
+    UNITY_TEST_FAIL(cmock_line, CMockStringCalledEarly);
+  if (cmock_call_instance->CallOrder < GlobalVerifyOrder)
+    UNITY_TEST_FAIL(cmock_line, CMockStringCalledLate);
+  {
+    UNITY_SET_DETAILS(CMockString_sendTextUart,CMockString_cmock_arg1);
+    UNITY_TEST_ASSERT_EQUAL_STRING(cmock_call_instance->Expected_cmock_arg1, cmock_arg1, cmock_line, CMockStringMismatch);
+  }
+  UNITY_CLR_DETAILS();
+  return cmock_call_instance->ReturnVal;
+}
+
+void CMockExpectParameters_sendTextUart(CMOCK_sendTextUart_CALL_INSTANCE* cmock_call_instance, char* cmock_arg1)
+{
+  cmock_call_instance->Expected_cmock_arg1 = cmock_arg1;
+}
+
+void sendTextUart_CMockIgnoreAndReturn(UNITY_LINE_TYPE cmock_line, int cmock_to_return)
+{
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_sendTextUart_CALL_INSTANCE));
+  CMOCK_sendTextUart_CALL_INSTANCE* cmock_call_instance = (CMOCK_sendTextUart_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.sendTextUart_CallInstance = CMock_Guts_MemChain(Mock.sendTextUart_CallInstance, cmock_guts_index);
+  Mock.sendTextUart_IgnoreBool = (int)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->ReturnVal = cmock_to_return;
+  Mock.sendTextUart_IgnoreBool = (int)1;
+}
+
+void sendTextUart_CMockExpectAndReturn(UNITY_LINE_TYPE cmock_line, char* cmock_arg1, int cmock_to_return)
+{
+  CMOCK_MEM_INDEX_TYPE cmock_guts_index = CMock_Guts_MemNew(sizeof(CMOCK_sendTextUart_CALL_INSTANCE));
+  CMOCK_sendTextUart_CALL_INSTANCE* cmock_call_instance = (CMOCK_sendTextUart_CALL_INSTANCE*)CMock_Guts_GetAddressFor(cmock_guts_index);
+  UNITY_TEST_ASSERT_NOT_NULL(cmock_call_instance, cmock_line, CMockStringOutOfMemory);
+  memset(cmock_call_instance, 0, sizeof(*cmock_call_instance));
+  Mock.sendTextUart_CallInstance = CMock_Guts_MemChain(Mock.sendTextUart_CallInstance, cmock_guts_index);
+  Mock.sendTextUart_IgnoreBool = (int)0;
+  cmock_call_instance->LineNumber = cmock_line;
+  cmock_call_instance->CallOrder = ++GlobalExpectCount;
+  CMockExpectParameters_sendTextUart(cmock_call_instance, cmock_arg1);
+  cmock_call_instance->ReturnVal = cmock_to_return;
+  UNITY_CLR_DETAILS();
+}
+
+void sendTextUart_StubWithCallback(CMOCK_sendTextUart_CALLBACK Callback)
+{
+  Mock.sendTextUart_IgnoreBool = (int)0;
+  Mock.sendTextUart_CallbackFunctionPointer = Callback;
 }
 

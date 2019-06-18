@@ -22,3 +22,7 @@ int sendUart(char * request,char * response) {
 	return 1;
 }
 
+int sendTextUart(char * text) {
+	return 1;
+}
+

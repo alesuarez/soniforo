@@ -1,9 +1,12 @@
 #ifndef FREERTOS_INC_CFG_WARNG_DEVICES_H_
 #define FREERTOS_INC_CFG_WARNG_DEVICES_H_
+
 #ifdef TEST
-#include <inttypes.h>
+#include "FreeRtos_test.h"
+#include "sapi_types_test.h"
+#include "fake_data.h"
 #else
-#include "sapi.h"
+#include "commons.h"
 #endif
 
 #define MAX_COMMAND_LENGHT	 	45

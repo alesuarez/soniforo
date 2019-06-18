@@ -2,7 +2,7 @@
 
 void ligthRedTask(void *p) {
 	xQueueHandle Buffer = *(xQueueHandle *) p;
-	struct Message ligthRedTask_Message;
+	Message ligthRedTask_Message;
 
 	portTickType xPeriodicity = 20 / portTICK_RATE_MS;
 	portTickType xLastWakeTime = xTaskGetTickCount();
