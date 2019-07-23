@@ -10,7 +10,6 @@ void learningHandler( event_t * evn ) {
 		case SIG_INIT:
 			break;
 		case SIG_LEARNING_INIT:
-
 			break;
 		case SIG_LEARNING_WAITING_RED_LIGHT:
 			break;

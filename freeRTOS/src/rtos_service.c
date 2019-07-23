@@ -6,12 +6,11 @@
 #include "event_queue_task.h"
 #include "cfg_warng_devices.h"
 #include "send_status_task.h"
+#include "lights_callbacks.h"
 
-static void redLightCallback();
-static void greenLightCallback();
 static uint32_t getTime(lightTime_t lightsTime);
 
-void create_all_tasks() {
+void createAllTasks() {
 
 	xTaskCreate(aliveTask,
 			(const char *) "aliveTask",
@@ -40,52 +39,40 @@ void create_all_tasks() {
 			configMINIMAL_STACK_SIZE * 2,
 			NULL,
 			tskIDLE_PRIORITY + 1,
-			&configurationTaskHandle);
+			&ledBlinkingInConfigurationTaskHandle);
 
-	xTaskCreate(esp01Task,
+	xTaskCreate(esp01ConfigurationTask,
 			(const char *) "esp01Task",
 			configMINIMAL_STACK_SIZE * 2,
 			NULL,
 			tskIDLE_PRIORITY + 1,
-			&esp01TaskHandle);
+			&esp01ConfigurationTaskHandle);
 
 	xTaskCreate(sendStatusToEsp01Task,
 			(const char *) "sendStatusToEsp01Task",
 			configMINIMAL_STACK_SIZE * 2,
 			NULL,
 			tskIDLE_PRIORITY + 1,
-			&sendStatusTaskHandle);
+			&sendStatusEsp01TaskHandle);
 }
 
-void suspend_selected_tasks() {
-	vTaskSuspend(configurationTaskHandle);
-	vTaskSuspend(esp01TaskHandle);
-	vTaskSuspend(sendStatusTaskHandle);
+void suspendSelectedTasks() {
+	vTaskSuspend(ledBlinkingInConfigurationTaskHandle);
+	vTaskSuspend(esp01ConfigurationTaskHandle);
+	vTaskSuspend(sendStatusEsp01TaskHandle);
 	vTaskSuspend(initTaskHandle);
 }
 
-void init_queues( void ) {
+void initQueues( void ) {
 	eventQueue = xQueueCreate(16, sizeof( event_t));
 }
 
-void create_timers( void ) {
+void createTimers( void ) {
 	redLightTimerHandle = xTimerCreate("Timer red light", getTime(lightsTime[RED_LED]), pdFALSE, 0, redLightCallback);
 	//lightsTimeArray[1] = xTimerCreate("Timer yellow light", DEBOUNCE_FILTER_TIMER_PERIOD, pdFALSE, 0, yellowLightCallback);
 	greenLightTimerHandle = xTimerCreate("Timer green light", getTime(lightsTime[GREEN_LED]), pdFALSE, 0, greenLightCallback);
 }
 
-
-
 static uint32_t getTime(lightTime_t lightsTime) {
 	return lightsTime.end - lightsTime.begin;
 }
-
-static void redLightCallback() {
-
-}
-
-static void greenLightCallback() {
-
-}
-
-

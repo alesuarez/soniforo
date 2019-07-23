@@ -15,26 +15,27 @@ int main(void) {
 
 	boardConfig();
 
-
-
 	// Crear tarea en freeRTOS
-	create_all_tasks();
-	suspend_selected_tasks();
-/*
-	statusModule = registerModule(statusHandler);
-	configurationModule = registerModule(configurationHandler);
-	learningModule = registerModule(learningHandler);
-	lightsModule = registerModule(lightsHandler);
-	lightsTimeModule = registerModule(lightsTimeHandler);
+	createAllTasks();
+	suspendSelectedTasks();
 
-	initAllModules();*/
-	init_queues();
+	statusModule 		= registerModule(statusHandler);
+	configurationModule = registerModule(configurationHandler);
+	learningModule 		= registerModule(learningHandler);
+	lightsModule 		= registerModule(lightsHandler);
+	lightsTimeModule 	= registerModule(lightsTimeHandler);
+
+	initAllModules();
+	initQueues();
 
 	IRQ_init();
+
 	vTaskStartScheduler();
 
-
-	while ( TRUE) {
+	while (TRUE) {
+		gpioWrite(LED1, ON);
+		gpioWrite(LED2, ON);
+		gpioWrite(LED3, ON);
 	}
 
 	return 0;

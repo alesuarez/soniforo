@@ -5,8 +5,6 @@
 #include "soniforo.h"
 #include "event.h"
 
-extern module_t * statusModule;
-
 static void initlightsTimeModule();
 
 void lightsTimeHandler(event_t * evn) {

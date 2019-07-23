@@ -1,6 +1,8 @@
 #ifndef FREERTOS_INC_CFG_WARNG_DEVICES_H_
 #define FREERTOS_INC_CFG_WARNG_DEVICES_H_
-
+#include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
+#include "task.h"
 #include "sapi.h"
 
 #define MAX_COMMAND_LENGHT	 	45
@@ -23,7 +25,9 @@ typedef enum CommandEsp8266 {
 	CMD_CWAUTOCONN_0 //13
 } CommandEsp8266_t;
 
-void esp01Task(void *);
+TaskHandle_t esp01ConfigurationTaskHandle;
+
+void esp01ConfigurationTask(void *);
 uint8_t sendCmd(CommandEsp8266_t) ;
 
 #endif /* FREERTOS_INC_CFG_WARNG_DEVICES_H_ */

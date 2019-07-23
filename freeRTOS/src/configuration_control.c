@@ -1,9 +1,7 @@
 #include "configuration_control.h"
 #include "event.h"
-#include "FreeRTOS.h"
-#include "FreeRTOSConfig.h"
-#include "task.h"
-#include "rtos_service.h"
+#include "cfg_warng_devices.h"
+#include "alive_task.h"
 
 extern module_t * statusModule;
 
@@ -12,10 +10,10 @@ void configurationHandler( event_t * evn ) {
 		case SIG_INIT:
 			break;
 		case SIG_CONFIGURING_INIT:
-			vTaskResume(esp01TaskHandle);
+			vTaskResume(esp01ConfigurationTaskHandle);
 			break;
 		case SIG_CONFIGURING_FINISH:
-			vTaskSuspend(configurationTaskHandle);
+			vTaskSuspend(ledBlinkingInConfigurationTaskHandle);
 			gpioWrite(LED3, ON);
 			gpioWrite(LED2, ON);
 			putEvent(statusModule, SIG_CONFIGURING_FINISH);

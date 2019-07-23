@@ -3,7 +3,6 @@
 #include "event.h"
 #include "soniforo.h"
 
-
 static void processLightOn(event_t * evn);
 static void processLightOff(event_t * evn);
 static void processLightOnRunning(event_t * evn);
@@ -12,7 +11,6 @@ static void processLightOffRunning(event_t * evn);
 void lightsHandler(event_t * evn) {
 	switch (evn->signal) {
 	case SIG_INIT:
-
 		break;
 	case SIG_LIGHT_ON:
 		processLightOn(evn);

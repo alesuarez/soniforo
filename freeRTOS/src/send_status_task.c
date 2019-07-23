@@ -1,7 +1,5 @@
 #include "send_status_task.h"
-#include "FreeRTOS.h"
-#include "FreeRTOSConfig.h"
-#include "task.h"
+
 
 void sendStatusToEsp01Task(void * a) {
 	while (1) {

@@ -1,10 +1,10 @@
 #include "peripheral_driver.h"
 #include "sapi.h"
-
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
-//#include "event_framework.h"
-//#include "event.h"
+#include "event_framework.h"
+#include "event.h"
+#include "soniforo.h"
 
 #define CH0						0
 #define CH1						1
@@ -13,10 +13,7 @@
 #define PIN_0					0
 #define PIN_3					3
 #define PIN_4					4
-
 #define ISR_PRIORITY			5
-
-//extern module_t * lightsModule;
 
 void IRQ_init() {
 	Chip_PININT_Init(LPC_GPIO_PIN_INT);
@@ -65,20 +62,12 @@ void GPIO0_IRQHandler(void) {
 
 	if (Chip_PININT_GetFallStates(LPC_GPIO_PIN_INT) & PININTCH0) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH0); //Borramos el flag de interrupción
-		//xSwitchRequired = putEventFromISR(buttonsModule, SIG_BOTON_PULSADO, 0);
-		/*evn.value = 0;
-		evn.signal = SIG_BOTON_PULSADO;
-		evn.receptor =	buttonsModule;
-		xQueueSendFromISR( queEvento, &evn, &xSwitchRequired );*/
+		xSwitchRequired = putEventFromISR(lightsModule, SIG_LIGHT_ON, RED_LED);
 	}
 
 	if (Chip_PININT_GetRiseStates(LPC_GPIO_PIN_INT) & PININTCH0) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH0); //Borramos el flag de interrupción
-		//xSwitchRequired = putEventFromISR(buttonsModule, SIG_BOTON_LIBERADO, 0);
-		/*evn.value = 0;
-		evn.signal = SIG_BOTON_LIBERADO;
-		evn.receptor =	buttonsModule;
-		xQueueSendFromISR( queEvento, &evn, &xSwitchRequired );*/
+		xSwitchRequired = putEventFromISR(lightsModule, SIG_LIGHT_OFF, RED_LED);
 	}
 
 	portEND_SWITCHING_ISR(xSwitchRequired); //Terminar con taskYIELD_FROM_ISR (&xSwitchRequired);
@@ -89,20 +78,12 @@ void GPIO1_IRQHandler(void) {
 
 	if (Chip_PININT_GetFallStates(LPC_GPIO_PIN_INT) & PININTCH1) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH1); //Borramos el flag de interrupción
-	//	xSwitchRequired = putEventFromISR(buttonsModule, SIG_BOTON_PULSADO, 1);
-		/*evn.value = 1;
-		evn.signal = SIG_BOTON_PULSADO;
-		evn.receptor =	buttonsModule;
-		xQueueSendFromISR( queEvento, &evn, &xSwitchRequired );*/
+		xSwitchRequired = putEventFromISR(lightsModule, SIG_LIGHT_ON, YELLOW_LED);
 	}
 
 	if (Chip_PININT_GetRiseStates(LPC_GPIO_PIN_INT) & PININTCH1) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH1); //Borramos el flag de interrupción
-		//xSwitchRequired = putEventFromISR(buttonsModule, SIG_BOTON_LIBERADO, 1);
-		/*evn.value = 1;
-		evn.signal = SIG_BOTON_LIBERADO;
-		evn.receptor =	buttonsModule;
-		xQueueSendFromISR( queEvento, &evn, &xSwitchRequired );*/
+		xSwitchRequired = putEventFromISR(lightsModule, SIG_LIGHT_OFF, YELLOW_LED);
 	}
 
 	portEND_SWITCHING_ISR(xSwitchRequired); //Terminar con taskYIELD_FROM_ISR (&xSwitchRequired);
@@ -113,20 +94,12 @@ void GPIO2_IRQHandler(void) {
 
 	if (Chip_PININT_GetFallStates(LPC_GPIO_PIN_INT) & PININTCH2) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH2); //Borramos el flag de interrupción
-		//xSwitchRequired = putEventFromISR(buttonsModule, SIG_BOTON_PULSADO, 2);
-		/*evn.value = 2;
-		evn.signal = SIG_BOTON_PULSADO;
-		evn.receptor =	buttonsModule;
-		xQueueSendFromISR( queEvento, &evn, &xSwitchRequired );*/
+		xSwitchRequired = putEventFromISR(lightsModule, SIG_LIGHT_ON, GREEN_LED);
 	}
 
 	if (Chip_PININT_GetRiseStates(LPC_GPIO_PIN_INT) & PININTCH2) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH2); //Borramos el flag de interrupción
-		//xSwitchRequired = putEventFromISR(buttonsModule, SIG_BOTON_LIBERADO, 2);
-		/*evn.value = 2;
-		evn.signal = SIG_BOTON_LIBERADO;
-		evn.receptor =	buttonsModule;
-		xQueueSendFromISR( queEvento, &evn, &xSwitchRequired );*/
+		xSwitchRequired = putEventFromISR(lightsModule, SIG_LIGHT_ON, GREEN_LED);
 	}
 
 	portEND_SWITCHING_ISR(xSwitchRequired); //Terminar con taskYIELD_FROM_ISR (&xSwitchRequired);
@@ -137,20 +110,14 @@ void GPIO3_IRQHandler(void) {
 
 	if (Chip_PININT_GetFallStates(LPC_GPIO_PIN_INT) & PININTCH3) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH3); //Borramos el flag de interrupción
-		//xSwitchRequired = putEventFromISR(buttonsModule, SIG_BOTON_PULSADO, 3);
-		/*evn.value = 3;
-		evn.signal = SIG_BOTON_PULSADO;
-		evn.receptor =	buttonsModule;
-		xQueueSendFromISR( queEvento, &evn, &xSwitchRequired );*/
+		//xSwitchRequired = putEventFromISR(lightsModule, SIG_LIGHT_ON, 3);
+		// thinking about your future
 	}
 
 	if (Chip_PININT_GetRiseStates(LPC_GPIO_PIN_INT) & PININTCH3) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH3); //Borramos el flag de interrupción
-		//xSwitchRequired = putEventFromISR(buttonsModule, SIG_BOTON_LIBERADO, 3);
-		/*evn.value = 3;
-		evn.signal = SIG_BOTON_LIBERADO;
-		evn.receptor =	buttonsModule;
-		xQueueSendFromISR( queEvento, &evn, &xSwitchRequired );*/
+		//xSwitchRequired = putEventFromISR(lightsModule, SIG_BOTON_LIBERADO, 3);
+		// thinking about your future
 	}
 
 	portEND_SWITCHING_ISR(xSwitchRequired); //Terminar con taskYIELD_FROM_ISR (&xSwitchRequired);

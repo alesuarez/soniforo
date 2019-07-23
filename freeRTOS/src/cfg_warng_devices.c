@@ -3,10 +3,7 @@
 #include "commons.h"
 #include "event.h"
 #include "soniforo.h"
-#include "FreeRTOS.h"
-#include "FreeRTOSConfig.h"
-#include "task.h"
-#include "rtos_service.h"
+
 
 extern module_t * configurationModule;
 
@@ -53,7 +50,7 @@ uint8_t sendCmd(CommandEsp8266_t cmd) {
 	return sendUart(CommandEsp8266ToString[cmd], esp01Responses[cmd]);
 }
 
-void esp01Task(void *p) {
+void esp01ConfigurationTask(void *p) {
 	uint8_t attemptsValue = 0;
 	/*for (int i = 0; i < COMMAND_INIT_LENGHT; i++) {
 		if (!sendCmd(initVector[i])) {
@@ -71,5 +68,5 @@ void esp01Task(void *p) {
 		vTaskDelay(5000 / portTICK_RATE_MS);
 	}*/
 	putEvent(configurationModule, SIG_CONFIGURING_FINISH);
-	vTaskSuspend(esp01TaskHandle); 		// suspendo esta tarea
+	vTaskSuspend(esp01ConfigurationTaskHandle); 		// suspendo esta tarea
 }
