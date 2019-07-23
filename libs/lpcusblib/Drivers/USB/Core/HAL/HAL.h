@@ -31,21 +31,21 @@
  */
 
 /** @ingroup Group_USB
-*  @defgroup Group_HAL_LPC Hardware Abstraction Layer
-*  @brief Hardware Abstraction Layer for LPC architecture
-*  @{
-*/
- 
+ *  @defgroup Group_HAL_LPC Hardware Abstraction Layer
+ *  @brief Hardware Abstraction Layer for LPC architecture
+ *  @{
+ */
+
 #ifndef __LPC_HAL_H__
 #define __LPC_HAL_H__
 
 /* Chip Includes: */
 #if defined(__LPC18XX__) || defined(__LPC43XX__)
-	#include "LPC18XX/HAL_LPC18xx.h"
+#include "LPC18XX/HAL_LPC18xx.h"
 #elif defined(__LPC175X_6X__) || defined(__LPC177X_8X__) || defined(__LPC407X_8X__)
-	#include "LPC17XX/HAL_LPC17xx.h"
+#include "LPC17XX/HAL_LPC17xx.h"
 #elif defined(__LPC11U1X__) || defined(__LPC11U2X_3X__) || defined(__LPC1347__)
-	#include "LPC11UXX/HAL_LPC11Uxx.h"
+#include "LPC11UXX/HAL_LPC11Uxx.h"
 #endif
 /* Function Prototypes: */
 /**
@@ -85,13 +85,13 @@ void HAL_DisableUSBInterrupt(uint8_t corenum);
  *  Normally, this function is called when every setup or initial are done.
  */
 /**
-* @brief  	This function is used in device mode to pull up resistor on USB pin D+
-*  			Normally, this function is called when every setup or initial are done.
-* @param  	corenum		: USB port number
-* @param  	con			: connect or disconect
-* @return 	Nothing
-*/
-void HAL_USBConnect (uint8_t corenum, uint32_t con);
+ * @brief  	This function is used in device mode to pull up resistor on USB pin D+
+ *  			Normally, this function is called when every setup or initial are done.
+ * @param  	corenum		: USB port number
+ * @param  	con			: connect or disconect
+ * @return 	Nothing
+ */
+void HAL_USBConnect(uint8_t corenum, uint32_t con);
 
 /* Selected USB Port Number */
 extern uint8_t USBPortNum;

@@ -50,6 +50,7 @@ extern int DbgConsole_Printf( const char *fmt_s, ... );
 
 
 #define configSUPPORT_STATIC_ALLOCATION              1
+#define configSUPPORT_DYNAMIC_ALLOCATION			 1
 
 #define configUSE_PREEMPTION                         1
 #define configUSE_IDLE_HOOK                          0
@@ -101,6 +102,8 @@ extern int DbgConsole_Printf( const char *fmt_s, ... );
 #define INCLUDE_xTaskGetSchedulerState               1
 #define INCLUDE_xTimerPendFunctionCall               1
 #define INCLUDE_xSemaphoreGetMutexHolder             1
+
+#define INCLUDE_uxTaskGetStackHighWaterMark          1
 
 /* Cortex-M specific definitions. */
 #ifdef __NVIC_PRIO_BITS

@@ -1,0 +1,6 @@
+#ifndef FREERTOS_INC_EVENT_QUEUE_TASK_H_
+#define FREERTOS_INC_EVENT_QUEUE_TASK_H_
+
+void eventQueueTask(void *);
+
+#endif /* FREERTOS_INC_EVENT_QUEUE_TASK_H_ */

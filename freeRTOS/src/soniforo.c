@@ -1,34 +1,42 @@
+#include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
+#include "sapi.h"
 #include "commons.h"
-#include "rtos_driver.h"
+#include "peripheral_driver.h"
+#include "rtos_service.h"
+#include "soniforo.h"
+#include "status_control.h"
+#include "configuration_control.h"
+#include "learning_control.h"
+#include "lights_control.h"
+#include "lights_time_control.h"
 
 int main(void) {
 
 	boardConfig();
 
-	IRQ_init();							// configuro las interrupciones
 
-	debugPrintConfigUart( UART_USB, DEFAULT_BAUD_RATE );
-	debugPrintlnString("Inicio de programa... \r\n");
 
-	sendBuffer = xQueueCreate(10, sizeof(Message));
-	uartQueue = xQueueCreate(10, sizeof(char *));
 	// Crear tarea en freeRTOS
-	tasks_init();
+	create_all_tasks();
+	suspend_selected_tasks();
+/*
+	statusModule = registerModule(statusHandler);
+	configurationModule = registerModule(configurationHandler);
+	learningModule = registerModule(learningHandler);
+	lightsModule = registerModule(lightsHandler);
+	lightsTimeModule = registerModule(lightsTimeHandler);
 
-	vTaskSuspend(sendStatusToEthernetHandle);
+	initAllModules();*/
+	init_queues();
 
-	vTaskSuspend(ligthRedTaskHandle);
-	vTaskSuspend(ligthYellowTaskHandle);
-	vTaskSuspend(ligthGreenTaskHandle);
-
+	IRQ_init();
 	vTaskStartScheduler();
 
+
 	while ( TRUE) {
-		gpioWrite(LED1, ON);
-		gpioWrite(LED2, ON);
-		gpioWrite(LED3, ON);
-		// Si cae en este while 1 significa que no pudo iniciar el scheduler
 	}
 
 	return 0;
 }
+

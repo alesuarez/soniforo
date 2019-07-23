@@ -1,2 +1,0 @@
----
-- sapi_types_test.h

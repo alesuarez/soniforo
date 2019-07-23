@@ -1,0 +1,6 @@
+#ifndef FREERTOS_INC_LIGHTS_WATCHDOG_TASK_H_
+#define FREERTOS_INC_LIGHTS_WATCHDOG_TASK_H_
+
+void lightsWatchDogTask(void *);
+
+#endif /* FREERTOS_INC_LIGHTS_WATCHDOG_TASK_H_ */
