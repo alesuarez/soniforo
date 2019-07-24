@@ -11,6 +11,7 @@
 #include "lights_control.h"
 #include "lights_time_control.h"
 
+
 int main(void) {
 
 	boardConfig();
@@ -18,6 +19,7 @@ int main(void) {
 	// Crear tarea en freeRTOS
 	createAllTasks();
 	suspendSelectedTasks();
+	createInitConfigurationTimer();
 
 	statusModule 		= registerModule(statusHandler);
 	configurationModule = registerModule(configurationHandler);

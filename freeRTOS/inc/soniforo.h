@@ -10,6 +10,7 @@ module_t * configurationModule;
 module_t * learningModule;
 module_t * lightsModule;
 module_t * lightsTimeModule;
+module_t * debounceModule;
 
 typedef struct {
 	uint32_t begin;
@@ -17,8 +18,8 @@ typedef struct {
 	bool_t isOn;
 } lightTime_t;
 
-system_general_status_t systemStatus;
-lightTime_t lightsTime[MAX_LIGHTS];
+static system_general_status_t systemStatus;
+static lightTime_t lightsTime[MAX_LIGHTS];
 
 
 

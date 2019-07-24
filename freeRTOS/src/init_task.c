@@ -4,7 +4,7 @@
 #include "soniforo.h"
 
 void initTask(void *p) {
-	putEvent(statusModule, SIG_CONFIGURING_INIT);
+
 	vTaskDelete(initTaskHandle);
 }
 

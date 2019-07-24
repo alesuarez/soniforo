@@ -23,12 +23,22 @@ void putLightEvent(module_t * module, signal_t signal, led_name_t ledName) {
 	xQueueSend(eventQueue, &evn, 0);
 }
 
-portBASE_TYPE putEventFromISR(module_t * module, signal_t signal, led_name_t ledName) {
+portBASE_TYPE putLightEventFromISR(module_t * module, signal_t signal, led_name_t ledName) {
 	portBASE_TYPE cambiarCtx = pdFALSE;
 	event_t evn;
 	evn.receptor = module;
 	evn.signal = signal;
 	evn.ledName = ledName;
+
+	xQueueSendFromISR(eventQueue, &evn, &cambiarCtx);
+	return cambiarCtx;
+}
+
+portBASE_TYPE putEventFromISR(module_t * module, signal_t signal) {
+	portBASE_TYPE cambiarCtx = pdFALSE;
+	event_t evn;
+	evn.receptor = module;
+	evn.signal = signal;
 
 	xQueueSendFromISR(eventQueue, &evn, &cambiarCtx);
 	return cambiarCtx;

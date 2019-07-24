@@ -14,8 +14,7 @@ void configurationHandler( event_t * evn ) {
 			break;
 		case SIG_CONFIGURING_FINISH:
 			vTaskSuspend(ledBlinkingInConfigurationTaskHandle);
-			gpioWrite(LED3, ON);
-			gpioWrite(LED2, ON);
+			gpioWrite(LEDG, ON);
 			putEvent(statusModule, SIG_CONFIGURING_FINISH);
 			break;
 	}

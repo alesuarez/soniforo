@@ -4,7 +4,7 @@
 void aliveTask(void * a) {
 	portTickType xPeriodicity =  500 / portTICK_RATE_MS;
 	while (1) {
-		gpioToggle(LED3);
+		gpioToggle(LEDB);
 		vTaskDelay(xPeriodicity);
 	}
 }
@@ -12,7 +12,7 @@ void aliveTask(void * a) {
 void ledBlinkingInConfigurationTask(void * a) {
 	portTickType xPeriodicity =  500 / portTICK_RATE_MS;
 	while (1) {
-		gpioToggle(LED1);
+		gpioToggle(LEDG);
 		vTaskDelay(xPeriodicity);
 	}
 }

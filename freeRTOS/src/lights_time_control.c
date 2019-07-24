@@ -15,13 +15,16 @@ void lightsTimeHandler(event_t * evn) {
 	case SIG_LIGHT_ON:
 		lightsTime[evn->ledName].isOn = TRUE;
 		lightsTime[evn->ledName].begin = xTaskGetTickCount() / portTICK_RATE_MS;
+		if (evn->ledName == RED_LED) {
+			lightsTime[GREEN_LED].end = xTaskGetTickCount() / portTICK_RATE_MS;
+		}
 		break;
 	case SIG_LIGHT_OFF:
 		lightsTime[evn->ledName].isOn = FALSE;
-		lightsTime[evn->ledName].begin = xTaskGetTickCount() / portTICK_RATE_MS;
 		if (evn->ledName == GREEN_LED) {
 			putEvent(statusModule, SIG_LEARNING_WAITING_RED_LIGHT);
 		} else if (evn->ledName == RED_LED) {
+			lightsTime[evn->ledName].end = xTaskGetTickCount() / portTICK_RATE_MS;
 			putEvent(statusModule, SIG_LEARNING_FINISH);
 		}
 		break;

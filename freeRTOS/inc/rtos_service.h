@@ -9,11 +9,13 @@ QueueHandle_t eventQueue;
 
 TimerHandle_t redLightTimerHandle;
 TimerHandle_t greenLightTimerHandle;
+TimerHandle_t initConfigurationTimerHandle;
 
 void createAllTasks();
 void suspendSelectedTasks();
 
 void initQueues(void);
 void createTimers(void);
+void createInitConfigurationTimer(void);
 
 #endif /* FREERTOS_INC_RTOS_SERVICE_H_ */
