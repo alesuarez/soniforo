@@ -31,8 +31,8 @@ void statusHandler( event_t * evn ) {
 			setGeneralSystemStatus(LEARNING_WAITING_AGAIN_GREEN_LIGHT);
 			break;
 		case SIG_LEARNING_FINISH:
-			createTimers(); //configuracion de los timers
-			setGeneralSystemStatus(SIG_RUNNING_INIT); //wait again for red ligh
+			createLightAdvertisementTimers(); //configuracion de los timers
+			setGeneralSystemStatus(RUNNING_INIT); //wait again for red ligh
 			gpioToggle(LEDB);
 			break;
 		case SIG_RUNNING_INIT:

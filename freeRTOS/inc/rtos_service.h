@@ -15,7 +15,7 @@ void createAllTasks();
 void suspendSelectedTasks();
 
 void initQueues(void);
-void createTimers(void);
+void createLightAdvertisementTimers(void);
 void createInitConfigurationTimer(void);
 void createLightDebounceTimers(void);
 

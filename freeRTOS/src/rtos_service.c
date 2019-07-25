@@ -9,7 +9,7 @@
 #include "send_status_task.h"
 #include "debounce_control.h"
 
-static uint32_t getTime(lightTime_t lightsTime);
+static uint32_t getTime(lightTime_t lightTime);
 
 void createAllTasks() {
 
@@ -68,7 +68,7 @@ void initQueues( void ) {
 	eventQueue = xQueueCreate(16, sizeof( event_t));
 }
 
-void createTimers( void ) {
+void createLightAdvertisementTimers( void ) {
 	redLightTimerHandle = xTimerCreate("Timer red light", getTime(lightsTime[RED_LED]), pdFALSE, 0, redLightCallback);
 	//lightsTimeArray[1] = xTimerCreate("Timer yellow light", DEBOUNCE_FILTER_TIMER_PERIOD, pdFALSE, 0, yellowLightCallback);
 	greenLightTimerHandle = xTimerCreate("Timer green light", getTime(lightsTime[GREEN_LED]), pdFALSE, 0, greenLightCallback);
@@ -85,6 +85,6 @@ void createLightDebounceTimers(void) {
 	lightDebounceTimerHandles[GREEN_LED] = xTimerCreate("Timer for green light", DEBOUNCE_FILTER_TIMER_PERIOD, pdFALSE, ( void * ) 0, debounceGreenLightCallback);
 }
 
-static uint32_t getTime(lightTime_t lightsTime) {
-	return lightsTime.end - lightsTime.begin;
+static uint32_t getTime(lightTime_t lightTime) {
+	return lightTime.end - lightTime.begin;
 }
