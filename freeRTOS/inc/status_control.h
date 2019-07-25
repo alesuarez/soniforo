@@ -4,6 +4,7 @@
 #include "event_framework.h"
 
 void statusHandler(event_t *);
+
 system_general_status_t getGeneralSystemStatus();
 void setGeneralSystemStatus(system_general_status_t);
 

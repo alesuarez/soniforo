@@ -2,6 +2,7 @@
 #include "event_framework.h"
 #include "event.h"
 #include "soniforo.h"
+#include "rtos_service.h"
 
 static void debounceCallback(led_name_t);
 
@@ -10,7 +11,8 @@ void initConfigurationCallback() {
 }
 
 void redLightCallback() {
-
+	xTimerStop(redLightTimerHandle, 0);
+	putEvent(broadcastModule, SIG_WAIT);
 }
 
 void yellowLightCallback() {
@@ -18,7 +20,8 @@ void yellowLightCallback() {
 }
 
 void greenLightCallback() {
-
+	xTimerStop(greenLightTimerHandle, 0);
+	putEvent(broadcastModule, SIG_CROSS);
 }
 
 void debounceRedLightCallback(TimerHandle_t xTimer) {

@@ -98,6 +98,7 @@ void GPIO2_IRQHandler(void) {
 }
 
 void GPIO3_IRQHandler(void) {
+
 	portBASE_TYPE xSwitchRequired = pdFALSE;
 
 	if (Chip_PININT_GetFallStates(LPC_GPIO_PIN_INT) & PININTCH3) { //Verificamos que la interrupción es la esperada

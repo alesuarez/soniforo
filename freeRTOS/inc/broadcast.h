@@ -2,8 +2,6 @@
 #define FREERTOS_INC_BROADCAST_H_
 #include "event_framework.h"
 
-module_t * buttonsTimeModule;
-
-void broadcastEventHandler(event_t *);
+void broadcastHandler(event_t *);
 
 #endif /* FREERTOS_INC_BROADCAST_H_ */

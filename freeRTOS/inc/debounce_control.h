@@ -5,7 +5,7 @@
 #include "FreeRTOSConfig.h"
 #include "timers.h"
 
-TimerHandle_t lightDebounceTimers[3];
+TimerHandle_t lightDebounceTimerHandles[4];
 
 void debounceHandler(event_t * evn);
 

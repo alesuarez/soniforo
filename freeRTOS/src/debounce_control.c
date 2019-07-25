@@ -20,10 +20,8 @@ typedef struct{
 	bool_t isFilter;
 } debounceData_t;
 
-debounceData_t debounceDatas[3];
-char debounceTimeArray[10][3];
-
-static int buttonsCount = 0;
+debounceData_t debounceDatas[MAX_LIGHTS];
+char debounceTimeArray[10][MAX_LIGHTS];
 
 static void initButtonsModule();
 static void debouncefsm(debounceData_t *, event_t *) ;
@@ -36,14 +34,15 @@ void debounceHandler(event_t * evn) {
 			break;
 		case SIG_TIMEOUT:
 			debouncefsm(&debounceDatas[evn->ledName], evn);
-		  	xTimerReset(lightDebounceTimers[evn->ledName], 0);
+		  	xTimerStop(lightDebounceTimerHandles[evn->ledName], 0);
 			break;
 		case SIG_LIGHT_ON:
 			debouncefsm(&debounceDatas[evn->ledName], evn);
+			xTimerStart(lightDebounceTimerHandles[evn->ledName], 0);
 			break;
 		case SIG_LIGHT_OFF:
 			debouncefsm(&debounceDatas[evn->ledName], evn);
-			xTimerStart(lightDebounceTimers[evn->ledName], 0);
+			xTimerStart(lightDebounceTimerHandles[evn->ledName], 0);
 		}
 }
 
@@ -57,7 +56,6 @@ static void debounceInit(debounceData_t * debounceData, gpioMap_t lightPort) {
 	debounceData->lightPort = lightPort;
 	debounceData->state = ON_STATE;
 	debounceData->isFilter = FALSE;
-	buttonsCount++;
 }
 
 static void debouncefsm(debounceData_t * ptrDataStruct, event_t * evn) {

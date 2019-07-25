@@ -17,5 +17,6 @@ void suspendSelectedTasks();
 void initQueues(void);
 void createTimers(void);
 void createInitConfigurationTimer(void);
+void createLightDebounceTimers(void);
 
 #endif /* FREERTOS_INC_RTOS_SERVICE_H_ */

@@ -3,6 +3,7 @@
 #include "soniforo.h"
 #include "commons.h"
 #include "task.h"
+#include "rtos_service.h"
 
 extern system_general_status_t systemStatus;
 extern module_t * configurationModule;
@@ -26,13 +27,16 @@ void statusHandler( event_t * evn ) {
 		case SIG_LEARNING_WAITING_RED_LIGHT:
 			setGeneralSystemStatus(LEARNING_WAITING_RED_LIGHT);
 			break;
+		case SIG_LEARNING_AGAIN_GREEN_LIGHT_ON:
+			setGeneralSystemStatus(LEARNING_WAITING_AGAIN_GREEN_LIGHT);
+			break;
 		case SIG_LEARNING_FINISH:
-			//createTimers(); //configuracion de los timers
-			setGeneralSystemStatus(RUNNING);
-			gpioToggle(LED1);
+			createTimers(); //configuracion de los timers
+			setGeneralSystemStatus(SIG_RUNNING_INIT); //wait again for red ligh
+			gpioToggle(LEDB);
 			break;
 		case SIG_RUNNING_INIT:
-			gpioToggle(LED1);
+			gpioToggle(LEDR);
 			setGeneralSystemStatus(RUNNING);
 			break;
 	}

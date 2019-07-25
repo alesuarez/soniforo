@@ -3,7 +3,7 @@
 #include "modules.h"
 #include "sapi.h"
 
-#define MAX_LIGHTS 2
+#define MAX_LIGHTS 4
 
 module_t * statusModule;
 module_t * configurationModule;
@@ -11,6 +11,7 @@ module_t * learningModule;
 module_t * lightsModule;
 module_t * lightsTimeModule;
 module_t * debounceModule;
+module_t * broadcastModule;
 
 typedef struct {
 	uint32_t begin;
@@ -18,8 +19,8 @@ typedef struct {
 	bool_t isOn;
 } lightTime_t;
 
-static system_general_status_t systemStatus;
-static lightTime_t lightsTime[MAX_LIGHTS];
+system_general_status_t systemStatus;
+lightTime_t lightsTime[MAX_LIGHTS];
 
 
 

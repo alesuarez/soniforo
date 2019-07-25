@@ -10,7 +10,8 @@
 #include "learning_control.h"
 #include "lights_control.h"
 #include "lights_time_control.h"
-
+#include "debounce_control.h"
+#include "broadcast.h"
 
 int main(void) {
 
@@ -20,12 +21,15 @@ int main(void) {
 	createAllTasks();
 	suspendSelectedTasks();
 	createInitConfigurationTimer();
+	createLightDebounceTimers();
 
 	statusModule 		= registerModule(statusHandler);
 	configurationModule = registerModule(configurationHandler);
 	learningModule 		= registerModule(learningHandler);
 	lightsModule 		= registerModule(lightsHandler);
 	lightsTimeModule 	= registerModule(lightsTimeHandler);
+	debounceModule 		= registerModule(debounceHandler);
+	broadcastModule		= registerModule(broadcastHandler);
 
 	initAllModules();
 	initQueues();
