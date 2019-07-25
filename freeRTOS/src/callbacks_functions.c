@@ -12,11 +12,12 @@ void initConfigurationCallback() {
 
 void redLightCallback() {
 	xTimerStop(redLightTimerHandle, 0);
-	putEvent(broadcastModule, SIG_WAIT);
+	putEvent(broadcastModule, SIG_CAUTION);
 }
 
 void yellowLightCallback() {
-
+	xTimerStop(yellowLightTimerHandle, 0);
+	putEvent(broadcastModule, SIG_WAIT);
 }
 
 void greenLightCallback() {

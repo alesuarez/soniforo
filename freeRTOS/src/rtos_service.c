@@ -69,9 +69,13 @@ void initQueues( void ) {
 }
 
 void createLightAdvertisementTimers( void ) {
-	redLightTimerHandle = xTimerCreate("Timer red light", getTime(lightsTime[RED_LED]), pdFALSE, 0, redLightCallback);
-	//lightsTimeArray[1] = xTimerCreate("Timer yellow light", DEBOUNCE_FILTER_TIMER_PERIOD, pdFALSE, 0, yellowLightCallback);
-	greenLightTimerHandle = xTimerCreate("Timer green light", getTime(lightsTime[GREEN_LED]), pdFALSE, 0, greenLightCallback);
+	uint32_t redTime = getTime(lightsTime[RED_LED]) * 0.65;
+	uint32_t yellowTime = getTime(lightsTime[RED_LED]) * 0.35;
+	uint32_t greenTime = getTime(lightsTime[GREEN_LED]);
+
+	redLightTimerHandle = xTimerCreate("Timer red light",  redTime, pdFALSE, 0, redLightCallback);
+	yellowLightTimerHandle = xTimerCreate("Timer yellow light", yellowTime, pdFALSE, 0, yellowLightCallback);
+	greenLightTimerHandle = xTimerCreate("Timer green light", greenTime, pdFALSE, 0, greenLightCallback);
 }
 
 void createInitConfigurationTimer(void) {

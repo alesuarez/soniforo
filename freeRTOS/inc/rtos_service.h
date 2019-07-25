@@ -8,7 +8,9 @@
 QueueHandle_t eventQueue;
 
 TimerHandle_t redLightTimerHandle;
+TimerHandle_t yellowLightTimerHandle;
 TimerHandle_t greenLightTimerHandle;
+
 TimerHandle_t initConfigurationTimerHandle;
 
 void createAllTasks();

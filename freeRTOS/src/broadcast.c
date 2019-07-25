@@ -22,6 +22,7 @@ void broadcastHandler(event_t * evn) {
 		gpioWrite(LED3, OFF);
 		break;
 	case SIG_CAUTION:
+		xTimerStart(yellowLightTimerHandle, 0);
 		gpioWrite(LED1, OFF);
 		gpioWrite(LED2, OFF);
 		gpioWrite(LED3, ON);
