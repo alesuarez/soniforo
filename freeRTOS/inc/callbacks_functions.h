@@ -4,7 +4,7 @@
 #include "FreeRTOSConfig.h"
 #include "timers.h"
 
-#define DEBOUNCE_FILTER_TIMER_PERIOD ( 25UL / portTICK_RATE_MS )
+#define DEBOUNCE_FILTER_TIMER_PERIOD ( 50UL / portTICK_RATE_MS )
 
 void initConfigurationCallback();
 

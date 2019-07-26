@@ -65,17 +65,19 @@ void suspendSelectedTasks() {
 }
 
 void initQueues( void ) {
-	eventQueue = xQueueCreate(16, sizeof( event_t));
+	eventQueue = xQueueCreate(80, sizeof( event_t));
 }
 
 void createLightAdvertisementTimers( void ) {
-	uint32_t redTime = getTime(lightsTime[RED_LED]) * 0.65;
-	uint32_t yellowTime = getTime(lightsTime[RED_LED]) * 0.35;
+
+	uint32_t originalRedTime = getTime(lightsTime[RED_LED]);
+	uint32_t redTime = originalRedTime * 0.65;
+	uint32_t yellowTime = originalRedTime * 0.35;
 	uint32_t greenTime = getTime(lightsTime[GREEN_LED]);
 
-	redLightTimerHandle = xTimerCreate("Timer red light",  redTime, pdFALSE, 0, redLightCallback);
-	yellowLightTimerHandle = xTimerCreate("Timer yellow light", yellowTime, pdFALSE, 0, yellowLightCallback);
-	greenLightTimerHandle = xTimerCreate("Timer green light", greenTime, pdFALSE, 0, greenLightCallback);
+	redLightTimerHandle = xTimerCreate("Timer red light",   pdMS_TO_TICKS(redTime), pdFALSE, 0, redLightCallback);
+	yellowLightTimerHandle = xTimerCreate("Timer yellow light",  pdMS_TO_TICKS(yellowTime), pdFALSE, 0, yellowLightCallback);
+	greenLightTimerHandle = xTimerCreate("Timer green light",  pdMS_TO_TICKS(greenTime), pdFALSE, 0, greenLightCallback);
 }
 
 void createInitConfigurationTimer(void) {
@@ -84,9 +86,9 @@ void createInitConfigurationTimer(void) {
 }
 
 void createLightDebounceTimers(void) {
-	lightDebounceTimerHandles[RED_LED] = xTimerCreate("Timer for red light", DEBOUNCE_FILTER_TIMER_PERIOD, pdFALSE, ( void * ) 0, debounceRedLightCallback);
-	lightDebounceTimerHandles[YELLOW_LED] = xTimerCreate("Timer for yellow light", DEBOUNCE_FILTER_TIMER_PERIOD, pdFALSE, ( void * ) 0, debounceYellowLightCallback);
-	lightDebounceTimerHandles[GREEN_LED] = xTimerCreate("Timer for green light", DEBOUNCE_FILTER_TIMER_PERIOD, pdFALSE, ( void * ) 0, debounceGreenLightCallback);
+	lightDebounceTimerHandles[RED_LED] = xTimerCreate("Timer for red light", pdMS_TO_TICKS( 50 ), pdFALSE, ( void * ) 0, debounceRedLightCallback);
+	lightDebounceTimerHandles[YELLOW_LED] = xTimerCreate("Timer for yellow light", pdMS_TO_TICKS( 50 ), pdFALSE, ( void * ) 0, debounceYellowLightCallback);
+	lightDebounceTimerHandles[GREEN_LED] = xTimerCreate("Timer for green light", pdMS_TO_TICKS( 50 ), pdFALSE, ( void * ) 0, debounceGreenLightCallback);
 }
 
 static uint32_t getTime(lightTime_t lightTime) {

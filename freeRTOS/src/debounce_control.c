@@ -47,9 +47,9 @@ void debounceHandler(event_t * evn) {
 }
 
 static void initButtonsModule() {
-	debounceInit(&debounceDatas[RED_LED], RED_LED_PORT);
-	debounceInit(&debounceDatas[YELLOW_LED], YELLOW_LED_PORT);
-	debounceInit(&debounceDatas[GREEN_LED], GREEN_LED_PORT);
+	debounceInit(&debounceDatas[RED_LED], GPIO0);
+	debounceInit(&debounceDatas[YELLOW_LED], GPIO1);
+	debounceInit(&debounceDatas[GREEN_LED], GPIO2);
 }
 
 static void debounceInit(debounceData_t * debounceData, gpioMap_t lightPort) {
