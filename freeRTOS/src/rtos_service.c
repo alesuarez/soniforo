@@ -5,6 +5,7 @@
 #include "alive_task.h"
 #include "init_task.h"
 #include "event_queue_task.h"
+#include "uart_task.h"
 #include "cfg_warng_devices.h"
 #include "send_status_task.h"
 #include "debounce_control.h"
@@ -28,12 +29,38 @@ void createAllTasks() {
 			&initTaskHandle);
 
 	xTaskCreate(eventQueueTask,
-			(const char *) "event_task",
+			(const char *) "eventQueueTask",
 			configMINIMAL_STACK_SIZE * 2,
 			NULL,
 			tskIDLE_PRIORITY + 1,
 			0);
 
+	xTaskCreate(usbRxTask,
+			(const char *) "usbRxTask",
+			configMINIMAL_STACK_SIZE * 2,
+			NULL,
+			tskIDLE_PRIORITY + 1,
+			0);
+
+	xTaskCreate(usbTxTask,
+				(const char *) "usbTxTask",
+				configMINIMAL_STACK_SIZE * 2,
+				NULL,
+				tskIDLE_PRIORITY + 1,
+				0);
+	xTaskCreate(rs232RxTask,
+				(const char *) "rs232RxTask",
+				configMINIMAL_STACK_SIZE * 2,
+				NULL,
+				tskIDLE_PRIORITY + 1,
+				0);
+
+		xTaskCreate(rs232TxTask,
+					(const char *) "rs232RxTask",
+					configMINIMAL_STACK_SIZE * 2,
+					NULL,
+					tskIDLE_PRIORITY + 1,
+					0);
 
 	xTaskCreate(ledBlinkingInConfigurationTask,
 			(const char *) "ledBlinkingInConfigurationTask",
@@ -55,6 +82,7 @@ void createAllTasks() {
 			NULL,
 			tskIDLE_PRIORITY + 1,
 			&sendStatusEsp01TaskHandle);
+
 }
 
 void suspendSelectedTasks() {
@@ -66,7 +94,15 @@ void suspendSelectedTasks() {
 
 void initQueues( void ) {
 	eventQueue = xQueueCreate(80, sizeof( event_t));
+	usbRxQueue = xQueueCreate(80, sizeof( uint8_t));
+	usbTxQueue = xQueueCreate(80, sizeof( uint8_t));
+	rs232RxQueue = xQueueCreate(80, sizeof( uint8_t));
+	rs232TxQueue = xQueueCreate(80, sizeof( uint8_t));
 }
+
+/*void initSemaphores() {
+	//xTxSemaphore = xSemaphoreCreateBinary();
+}*/
 
 void createLightAdvertisementTimers( void ) {
 

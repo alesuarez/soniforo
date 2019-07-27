@@ -17,6 +17,8 @@ int main(void) {
 
 	boardConfig();
 
+	UART_init();
+
 	// Crear tarea en freeRTOS
 	createAllTasks();
 	suspendSelectedTasks();
@@ -34,7 +36,9 @@ int main(void) {
 	initAllModules();
 	initQueues();
 
+
 	IRQ_init();
+
 
 	vTaskStartScheduler();
 
