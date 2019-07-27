@@ -3,10 +3,11 @@
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 #include "task.h"
+#include "semphr.h"
 #include "sapi.h"
 
 #define MAX_COMMAND_LENGHT	 	45
-#define COMMAND_INIT_LENGHT	 	12
+#define COMMAND_INIT_LENGHT	 	11
 #define MAX_ATTEMPT				3
 
 typedef enum CommandEsp8266 {
@@ -26,8 +27,14 @@ typedef enum CommandEsp8266 {
 } CommandEsp8266_t;
 
 TaskHandle_t esp01ConfigurationTaskHandle;
+TaskHandle_t sendStatusCrossEsp01TaskHandle;
+TaskHandle_t sendStatusCautionEsp01TaskHandle;
+
+SemaphoreHandle_t expectedResponseSemaphoreHandle;
 
 void esp01ConfigurationTask(void *);
-uint8_t sendCmd(CommandEsp8266_t) ;
+void esp01ExpectedResponseTask(void *);
+void sendStatusCrossToEsp01Task(void *);
+void sendStatusCautionToEsp01Task(void *);
 
 #endif /* FREERTOS_INC_CFG_WARNG_DEVICES_H_ */

@@ -21,7 +21,9 @@ int main(void) {
 
 	// Crear tarea en freeRTOS
 	createAllTasks();
+
 	suspendSelectedTasks();
+
 	createInitConfigurationTimer();
 	createLightDebounceTimers();
 
@@ -35,7 +37,7 @@ int main(void) {
 
 	initAllModules();
 	initQueues();
-
+	initSemaphores();
 
 	IRQ_init();
 

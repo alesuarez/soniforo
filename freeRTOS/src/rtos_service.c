@@ -1,4 +1,5 @@
 #include "rtos_service.h"
+#include "semphr.h"
 #include "callbacks_functions.h"
 #include "modules.h"
 #include "soniforo.h"
@@ -7,7 +8,6 @@
 #include "event_queue_task.h"
 #include "uart_task.h"
 #include "cfg_warng_devices.h"
-#include "send_status_task.h"
 #include "debounce_control.h"
 
 static uint32_t getTime(lightTime_t lightTime);
@@ -76,19 +76,35 @@ void createAllTasks() {
 			tskIDLE_PRIORITY + 1,
 			&esp01ConfigurationTaskHandle);
 
-	xTaskCreate(sendStatusToEsp01Task,
+	xTaskCreate(sendStatusCrossToEsp01Task,
 			(const char *) "sendStatusToEsp01Task",
 			configMINIMAL_STACK_SIZE * 2,
 			NULL,
 			tskIDLE_PRIORITY + 1,
-			&sendStatusEsp01TaskHandle);
+			&sendStatusCrossEsp01TaskHandle);
+
+	xTaskCreate(sendStatusCautionToEsp01Task,
+			(const char *) "sendStatusToEsp01Task",
+			configMINIMAL_STACK_SIZE * 2,
+			NULL,
+			tskIDLE_PRIORITY + 1,
+			&sendStatusCautionEsp01TaskHandle);
+
+	xTaskCreate(esp01ExpectedResponseTask,
+			(const char *) "esp01ExpectedResponseTask",
+			configMINIMAL_STACK_SIZE * 2,
+			NULL,
+			tskIDLE_PRIORITY + 1,
+			0);
+
 
 }
 
 void suspendSelectedTasks() {
 	vTaskSuspend(ledBlinkingInConfigurationTaskHandle);
 	vTaskSuspend(esp01ConfigurationTaskHandle);
-	vTaskSuspend(sendStatusEsp01TaskHandle);
+	vTaskSuspend(sendStatusCrossEsp01TaskHandle);
+	vTaskSuspend(sendStatusCautionEsp01TaskHandle);
 	vTaskSuspend(initTaskHandle);
 }
 
@@ -100,9 +116,9 @@ void initQueues( void ) {
 	rs232TxQueue = xQueueCreate(80, sizeof( uint8_t));
 }
 
-/*void initSemaphores() {
-	//xTxSemaphore = xSemaphoreCreateBinary();
-}*/
+void initSemaphores() {
+	expectedResponseSemaphoreHandle = xSemaphoreCreateBinary();
+}
 
 void createLightAdvertisementTimers( void ) {
 

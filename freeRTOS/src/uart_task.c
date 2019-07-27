@@ -27,9 +27,9 @@ void rs232RxTask(void * p) {
 	portTickType xLastWakeTime = xTaskGetTickCount();
 	uint8_t byte;
 	while (1) {
-		if (xQueueReceive(rs232RxQueue, &byte, portMAX_DELAY)) {
-			xQueueSend(usbTxQueue, &byte, portMAX_DELAY);
-		}
+	//	if (xQueueReceive(rs232RxQueue, &byte, portMAX_DELAY)) {
+		//	xQueueSend(usbTxQueue, &byte, portMAX_DELAY);
+		//}
 	}
 }
 

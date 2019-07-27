@@ -4,8 +4,11 @@
 #include "FreeRTOSConfig.h"
 #include "timers.h"
 #include "rtos_service.h"
+#include "cfg_warng_devices.h"
 
 void broadcastHandler(event_t * evn) {
+	vTaskSuspend(sendStatusCrossEsp01TaskHandle);
+	vTaskSuspend(sendStatusCautionEsp01TaskHandle);
 	switch (evn->signal) {
 	case SIG_INIT:
 		break;
@@ -17,6 +20,7 @@ void broadcastHandler(event_t * evn) {
 		break;
 	case SIG_CROSS:
 		xTimerStart(redLightTimerHandle, 0);
+		vTaskResume(sendStatusCrossEsp01TaskHandle);
 		gpioWrite(LED1, OFF);
 		gpioWrite(LED2, OFF);
 		gpioWrite(LED3, ON);//verde
@@ -24,6 +28,7 @@ void broadcastHandler(event_t * evn) {
 	case SIG_CAUTION:
 		xTimerStop(redLightTimerHandle, 0);
 		xTimerStart(yellowLightTimerHandle, 0);
+		vTaskResume(sendStatusCautionEsp01TaskHandle);
 		gpioWrite(LED1, OFF);
 		gpioWrite(LED3, OFF);
 		gpioWrite(LED2, ON);//vamarillo

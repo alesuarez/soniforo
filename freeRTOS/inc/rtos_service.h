@@ -18,6 +18,8 @@ void createAllTasks();
 void suspendSelectedTasks();
 
 void initQueues(void);
+void initSemaphores();
+
 void createLightAdvertisementTimers(void);
 void createInitConfigurationTimer(void);
 void createLightDebounceTimers(void);
