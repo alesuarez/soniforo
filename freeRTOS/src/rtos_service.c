@@ -43,24 +43,24 @@ void createAllTasks() {
 			0);
 
 	xTaskCreate(usbTxTask,
-				(const char *) "usbTxTask",
-				configMINIMAL_STACK_SIZE * 2,
-				NULL,
-				tskIDLE_PRIORITY + 1,
-				0);
+			(const char *) "usbTxTask",
+			configMINIMAL_STACK_SIZE * 2,
+			NULL,
+			tskIDLE_PRIORITY + 1,
+			0);
 	xTaskCreate(rs232RxTask,
-				(const char *) "rs232RxTask",
-				configMINIMAL_STACK_SIZE * 2,
-				NULL,
-				tskIDLE_PRIORITY + 1,
-				0);
+			(const char *) "rs232RxTask",
+			configMINIMAL_STACK_SIZE * 2,
+			NULL,
+			tskIDLE_PRIORITY + 1,
+			0);
 
 		xTaskCreate(rs232TxTask,
-					(const char *) "rs232RxTask",
-					configMINIMAL_STACK_SIZE * 2,
-					NULL,
-					tskIDLE_PRIORITY + 1,
-					0);
+			(const char *) "rs232RxTask",
+			configMINIMAL_STACK_SIZE * 2,
+			NULL,
+			tskIDLE_PRIORITY + 1,
+			0);
 
 	xTaskCreate(ledBlinkingInConfigurationTask,
 			(const char *) "ledBlinkingInConfigurationTask",

@@ -22,7 +22,7 @@ uint8_t transmiterCounter;
 void IRQ_init() {
 	Chip_PININT_Init(LPC_GPIO_PIN_INT);
 
-	Chip_SCU_GPIOIntPinSel(0, 3, 0); //Mapeo del pin donde ocurrirá el evento y
+	Chip_SCU_GPIOIntPinSel(0, 3, 3); //Mapeo del pin donde ocurrirá el evento y
 
 	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH0); //Se configura el canal
 	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH0); //Se configura para que el
@@ -30,7 +30,7 @@ void IRQ_init() {
 	NVIC_SetPriority(PIN_INT0_IRQn, 5);
 	NVIC_EnableIRQ(PIN_INT0_IRQn);
 
-	Chip_SCU_GPIOIntPinSel(1, 3, 3); //Mapeo del pin donde ocurrirá el evento y
+	Chip_SCU_GPIOIntPinSel(1, 5, 15); //Mapeo del pin donde ocurrirá el evento y
 
 	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH1); //Se configura el canal
 	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH1); //Se configura para que el
@@ -38,7 +38,7 @@ void IRQ_init() {
 	NVIC_SetPriority(PIN_INT1_IRQn, 5);
 	NVIC_EnableIRQ(PIN_INT1_IRQn);
 
-	Chip_SCU_GPIOIntPinSel(2, 3, 4); //Mapeo del pin donde ocurrirá el evento y
+	Chip_SCU_GPIOIntPinSel(2, 3, 5); //Mapeo del pin donde ocurrirá el evento y
 
 	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH2); //Se configura el canal
 	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH2); //Se configura para que el
@@ -104,7 +104,6 @@ void UART_init() {
 
 	uartInterrupt(UART_USB, true);
 	uartInterrupt(UART_232, true);
-
 }
 
 void usbRX_int_handler(void * p) {

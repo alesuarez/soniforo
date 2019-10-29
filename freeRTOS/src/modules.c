@@ -7,7 +7,9 @@ int moduleIndex = 0;
 
 module_t * registerModule(fsm_ptr eventHandler) {
 
-	if (moduleIndex == MAX_MODULES) return ((void *) 0);
+	if (moduleIndex == MAX_MODULES) {
+		return ((void *) 0);
+	}
 
 	module_t * newModule = &modules[moduleIndex];
 	newModule->eventHandler = eventHandler;

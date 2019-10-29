@@ -4,7 +4,6 @@
 #include "soniforo.h"
 
 void initTask(void *p) {
-
 	vTaskDelete(initTaskHandle);
 }
 

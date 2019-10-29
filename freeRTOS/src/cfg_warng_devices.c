@@ -166,7 +166,7 @@ void sendStatusCrossToEsp01Task(void * a) {
 	portTickType xPeriodicity =  800 / portTICK_RATE_MS;
 	portTickType xLastWakeTime = xTaskGetTickCount();
 	while (1) {
-		sendString("Cruzar\r\n",8);
+		sendString("CS\r\n", 4);
 		sendCmd(CMD_CIPSEND);
 		vTaskDelayUntil(&xLastWakeTime, xPeriodicity );
 	}
@@ -176,7 +176,7 @@ void sendStatusCautionToEsp01Task(void * a) {
 	portTickType xPeriodicity =  800 / portTICK_RATE_MS;
 	portTickType xLastWakeTime = xTaskGetTickCount();
 	while (1) {
-		sendString("Apurat\r\n",8);
+		sendString("CTN\r\n", 4);
 		sendCmd(CMD_CIPSEND);
 		vTaskDelayUntil(&xLastWakeTime, xPeriodicity );
 	}

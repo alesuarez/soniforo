@@ -31,7 +31,7 @@ void broadcastHandler(event_t * evn) {
 		vTaskResume(sendStatusCautionEsp01TaskHandle);
 		gpioWrite(LED1, OFF);
 		gpioWrite(LED3, OFF);
-		gpioWrite(LED2, ON);//vamarillo
+		gpioWrite(LED2, ON);//amarillo
 		break;
 	}
 }

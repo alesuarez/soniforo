@@ -3,8 +3,9 @@
 #include "modules.h"
 #include "sapi.h"
 
-#define MAX_LIGHTS 		4
-#define PC_UART_BAUD 	115200
+#define MAX_LIGHTS 				4
+#define PC_UART_BAUD 			115200
+#define	MAX_WAITING_LIGHT_TIME 	80
 
 module_t * statusModule;
 module_t * configurationModule;

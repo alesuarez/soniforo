@@ -41,7 +41,6 @@ int main(void) {
 
 	IRQ_init();
 
-
 	vTaskStartScheduler();
 
 	while (TRUE) {
