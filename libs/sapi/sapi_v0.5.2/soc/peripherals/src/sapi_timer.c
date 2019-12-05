@@ -229,26 +229,6 @@ void Timer_SetCompareMatch( uint8_t timerNumber,
    Chip_TIMER_SetMatch(timer_sd[timerNumber].name, compareMatchNumber,ticks);
 }
 
-/*==================[ISR external functions definition]======================*/
-/*
- * @Brief:   Executes the functions passed by parameter in the Timer_init,
- *   at the chosen frequencies
- */
-void TIMER0_IRQHandler(void)
-{
-
-   uint8_t compareMatchNumber = 0;
-
-   for( compareMatchNumber = TIMERCOMPAREMATCH0;
-        compareMatchNumber <= TIMERCOMPAREMATCH3;
-        compareMatchNumber++ ) {
-      if( Chip_TIMER_MatchPending(LPC_TIMER0, compareMatchNumber) ) {
-         /*Run the functions saved in the timer dynamic data structure*/
-         (*timer_dd[TIMER0].timerCompareMatchFunctionPointer[compareMatchNumber])(0);
-         Chip_TIMER_ClearMatch(LPC_TIMER0, compareMatchNumber);
-      }
-   }
-}
 
 void TIMER1_IRQHandler( void )
 {

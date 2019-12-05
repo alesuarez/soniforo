@@ -115,7 +115,7 @@ void Timer_SetCompareMatch(uint8_t timerNumber, uint8_t compareMatchNumber,
  * @Brief:   Executes the functions passed by parameter in the Timer_init,
  *   at the chosen frequencies
  */
-void TIMER0_IRQHandler(void);
+//void TIMER0_IRQHandler(void);
 void TIMER1_IRQHandler(void);
 void TIMER2_IRQHandler(void);
 void TIMER3_IRQHandler(void);

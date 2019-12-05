@@ -7,6 +7,7 @@
 #include "event.h"
 #include "soniforo.h"
 #include "uart_task.h"
+#include "sound.h"
 
 #define CH0						0
 #define CH1						1
@@ -18,6 +19,8 @@
 #define ISR_PRIORITY			5
 
 uint8_t transmiterCounter;
+uint16_t signalPower = 1;
+uint16_t lapse = 10000;
 
 void IRQ_init() {
 	Chip_PININT_Init(LPC_GPIO_PIN_INT);
@@ -52,12 +55,16 @@ void GPIO0_IRQHandler(void) {
 
 	if (Chip_PININT_GetFallStates(LPC_GPIO_PIN_INT) & PININTCH0) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH0); //Borramos el flag de interrupción
-		xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_OFF, RED_LED);
+		xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_ON, RED_LED); // OPTOSENSOR
+		//xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_OFF, RED_LED);
+		//xSwitchRequired = putLightEventFromISR(debounceModule, SIG_LIGHT_OFF, RED_LED);
 	}
 
 	if (Chip_PININT_GetRiseStates(LPC_GPIO_PIN_INT) & PININTCH0) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH0); //Borramos el flag de interrupción
-		xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_ON, RED_LED);
+		xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_OFF, RED_LED);// OPTOSENSOR
+		//xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_ON, RED_LED);
+		//xSwitchRequired = putLightEventFromISR(debounceModule, SIG_LIGHT_ON, RED_LED);
 	}
 
 	portEND_SWITCHING_ISR(xSwitchRequired); //Terminar con taskYIELD_FROM_ISR (&xSwitchRequired);
@@ -68,12 +75,16 @@ void GPIO1_IRQHandler(void) {
 
 	if (Chip_PININT_GetFallStates(LPC_GPIO_PIN_INT) & PININTCH1) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH1); //Borramos el flag de interrupción
-		xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_OFF, YELLOW_LED);
+		//xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_OFF, YELLOW_LED);
+		//xSwitchRequired = putLightEventFromISR(debounceModule, SIG_LIGHT_OFF, YELLOW_LED);
+		xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_ON, YELLOW_LED);// OPTOSENSOR
 	}
 
 	if (Chip_PININT_GetRiseStates(LPC_GPIO_PIN_INT) & PININTCH1) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH1); //Borramos el flag de interrupción
-		xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_ON, YELLOW_LED);
+		xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_OFF, YELLOW_LED);// OPTOSENSOR
+		//xSwitchRequired = putLightEventFromISR(debounceModule, SIG_LIGHT_ON, YELLOW_LED);
+		//xSwitchRequired = putLightEventFromISR(debounceModule, SIG_LIGHT_ON, YELLOW_LED);
 	}
 
 	portEND_SWITCHING_ISR(xSwitchRequired); //Terminar con taskYIELD_FROM_ISR (&xSwitchRequired);
@@ -84,15 +95,56 @@ void GPIO2_IRQHandler(void) {
 
 	if (Chip_PININT_GetFallStates(LPC_GPIO_PIN_INT) & PININTCH2) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH2); //Borramos el flag de interrupción
-		xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_OFF, GREEN_LED);
+		xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_ON, GREEN_LED);// OPTOSENSOR
+		//xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_OFF, GREEN_LED);
+		//xSwitchRequired = putLightEventFromISR(debounceModule, SIG_LIGHT_OFF, GREEN_LED);
 	}
 
 	if (Chip_PININT_GetRiseStates(LPC_GPIO_PIN_INT) & PININTCH2) { //Verificamos que la interrupción es la esperada
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH2); //Borramos el flag de interrupción
-		xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_ON, GREEN_LED);
+		xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_OFF, GREEN_LED);// OPTOSENSOR
+		//xSwitchRequired = putLightEventFromISR(lightsModule, SIG_LIGHT_ON, GREEN_LED);
+		//xSwitchRequired = putLightEventFromISR(debounceModule, SIG_LIGHT_ON, GREEN_LED);
 	}
 
 	portEND_SWITCHING_ISR(xSwitchRequired); //Terminar con taskYIELD_FROM_ISR (&xSwitchRequired);
+}
+
+void timer0Init(uint32_t MatchCount){
+	Chip_TIMER_Init(LPC_TIMER0);
+	Chip_TIMER_SetMatch(LPC_TIMER0, 0, MatchCount);
+	Chip_TIMER_ResetOnMatchEnable(LPC_TIMER0, 0);
+	Chip_TIMER_MatchEnableInt(LPC_TIMER0, 0);
+	Chip_TIMER_Enable(LPC_TIMER0);
+}
+
+
+void TIMER0_IRQHandler(void){
+	int32_t tmp;
+	if (Chip_TIMER_MatchPending(LPC_TIMER0, 0)) {
+		static uint16_t indice = 0;
+		if (indice < 1716) {
+			//taskENTER_CRITICAL();
+			Chip_DAC_UpdateValue(LPC_DAC, rawData[indice]/(signalPower));	// Mitad para no saturar line-in
+			//taskEXIT_CRITICAL();
+
+		} else if (indice > 1716 && indice < lapse) {
+			Chip_DAC_UpdateValue(LPC_DAC,0);	// Mitad para no saturar line-in
+		}
+		if (indice > 10000) {
+			indice=0;
+		}
+		indice++;
+		Chip_TIMER_ClearMatch(LPC_TIMER0, 0);
+	}
+}
+
+void setSignalPower(uint16_t newSignalPower) {
+	signalPower = newSignalPower;
+}
+
+void setLapse(uint16_t newLapse) {
+	lapse = newLapse;
 }
 
 void UART_init() {

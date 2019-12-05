@@ -13,6 +13,10 @@ void UART_init(void);
 void usbRX_int_handler(void *);
 void rs232RX_int_handler(void *);
 
+void timer0Init(uint32_t);
+void setSignalPower(uint16_t);
+void setLapse(uint16_t);
+
 void systemError();
 
 #endif /* FREERTOS_INC_PERIPHERAL_DRIVER_H_ */

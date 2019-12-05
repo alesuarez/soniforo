@@ -18,7 +18,8 @@ int main(void) {
 	boardConfig();
 
 	UART_init();
-
+	adcConfig(ADC_ENABLE); /* ADC */
+	dacConfig(DAC_ENABLE); /* DAC */
 	// Crear tarea en freeRTOS
 	createAllTasks();
 
@@ -32,7 +33,7 @@ int main(void) {
 	learningModule 		= registerModule(learningHandler);
 	lightsModule 		= registerModule(lightsHandler);
 	lightsTimeModule 	= registerModule(lightsTimeHandler);
-	debounceModule 		= registerModule(debounceHandler);
+	//debounceModule 		= registerModule(debounceHandler);
 	broadcastModule		= registerModule(broadcastHandler);
 
 	initAllModules();
@@ -40,6 +41,7 @@ int main(void) {
 	initSemaphores();
 
 	IRQ_init();
+	timer0Init(10000);
 
 	vTaskStartScheduler();
 

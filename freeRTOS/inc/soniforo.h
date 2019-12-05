@@ -26,4 +26,5 @@ lightTime_t lightsTime[MAX_LIGHTS];
 
 
 
+
 #endif /* FREERTOS_INC_SONIFORO_H_ */

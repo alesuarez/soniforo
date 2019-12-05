@@ -34,15 +34,15 @@ void debounceHandler(event_t * evn) {
 			break;
 		case SIG_TIMEOUT:
 			debouncefsm(&debounceDatas[evn->ledName], evn);
-		  	xTimerStop(lightDebounceTimerHandles[evn->ledName], 0);
+		  	//xTimerStop(lightDebounceTimerHandles[evn->ledName], 0);
 			break;
 		case SIG_LIGHT_ON:
 			debouncefsm(&debounceDatas[evn->ledName], evn);
-			xTimerStart(lightDebounceTimerHandles[evn->ledName], 0);
+			//xTimerStart(lightDebounceTimerHandles[evn->ledName], 0);
 			break;
 		case SIG_LIGHT_OFF:
 			debouncefsm(&debounceDatas[evn->ledName], evn);
-			xTimerStart(lightDebounceTimerHandles[evn->ledName], 0);
+			//xTimerStart(lightDebounceTimerHandles[evn->ledName], 0);
 		}
 }
 

@@ -7,6 +7,7 @@
 #include "init_task.h"
 #include "event_queue_task.h"
 #include "uart_task.h"
+#include "sonometer_task.h"
 #include "cfg_warng_devices.h"
 #include "debounce_control.h"
 
@@ -97,6 +98,13 @@ void createAllTasks() {
 			tskIDLE_PRIORITY + 1,
 			0);
 
+	xTaskCreate(sonomterTask,
+				(const char *) "sonomterTask",
+				configMINIMAL_STACK_SIZE * 2,
+				NULL,
+				tskIDLE_PRIORITY + 1,
+				0);
+
 
 }
 
@@ -129,7 +137,7 @@ void createLightAdvertisementTimers( void ) {
 
 	redLightTimerHandle = xTimerCreate("Timer red light",   pdMS_TO_TICKS(redTime), pdFALSE, 0, redLightCallback);
 	yellowLightTimerHandle = xTimerCreate("Timer yellow light",  pdMS_TO_TICKS(yellowTime), pdFALSE, 0, yellowLightCallback);
-	greenLightTimerHandle = xTimerCreate("Timer green light",  pdMS_TO_TICKS(greenTime), pdFALSE, 0, greenLightCallback);
+	//greenLightTimerHandle = xTimerCreate("Timer green light",  pdMS_TO_TICKS(greenTime), pdFALSE, 0, greenLightCallback);
 }
 
 void createInitConfigurationTimer(void) {
@@ -138,9 +146,9 @@ void createInitConfigurationTimer(void) {
 }
 
 void createLightDebounceTimers(void) {
-	lightDebounceTimerHandles[RED_LED] = xTimerCreate("Timer for red light", pdMS_TO_TICKS( 50 ), pdFALSE, ( void * ) 0, debounceRedLightCallback);
-	lightDebounceTimerHandles[YELLOW_LED] = xTimerCreate("Timer for yellow light", pdMS_TO_TICKS( 50 ), pdFALSE, ( void * ) 0, debounceYellowLightCallback);
-	lightDebounceTimerHandles[GREEN_LED] = xTimerCreate("Timer for green light", pdMS_TO_TICKS( 50 ), pdFALSE, ( void * ) 0, debounceGreenLightCallback);
+	//lightDebounceTimerHandles[RED_LED] = xTimerCreate("Timer for red light", pdMS_TO_TICKS( 100 ), pdFALSE, ( void * ) 0, debounceRedLightCallback);
+	//lightDebounceTimerHandles[YELLOW_LED] = xTimerCreate("Timer for yellow light", pdMS_TO_TICKS( 100 ), pdFALSE, ( void * ) 0, debounceYellowLightCallback);
+	//lightDebounceTimerHandles[GREEN_LED] = xTimerCreate("Timer for green light", pdMS_TO_TICKS( 100 ), pdFALSE, ( void * ) 0, debounceGreenLightCallback);
 }
 
 static uint32_t getTime(lightTime_t lightTime) {

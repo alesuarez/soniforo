@@ -163,7 +163,7 @@ void esp01ExpectedResponseTask(void * p) {
 }
 
 void sendStatusCrossToEsp01Task(void * a) {
-	portTickType xPeriodicity =  800 / portTICK_RATE_MS;
+	portTickType xPeriodicity =  700 / portTICK_RATE_MS;
 	portTickType xLastWakeTime = xTaskGetTickCount();
 	while (1) {
 		sendString("CS\r\n", 4);
@@ -173,7 +173,7 @@ void sendStatusCrossToEsp01Task(void * a) {
 }
 
 void sendStatusCautionToEsp01Task(void * a) {
-	portTickType xPeriodicity =  800 / portTICK_RATE_MS;
+	portTickType xPeriodicity =  700 / portTICK_RATE_MS;
 	portTickType xLastWakeTime = xTaskGetTickCount();
 	while (1) {
 		sendString("CTN\r\n", 4);
